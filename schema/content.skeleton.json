@@ -1,0 +1,28 @@
+{
+  "_comment": "SHAPE ONLY. Copy to run/content.json and replace every <...> placeholder. Delete this _comment key. Full rules: schema/content.schema.json. Light markup: **bold** only. Dates YYYY-MM-DD, times HH:MM 24h ET.",
+  "toplead": "<ONE declarative sentence: **driver** — mechanism — what resolves/invalidates it and when>",
+  "heads_up": [
+    {"title": "<causal event, not price pattern>", "grade": 3, "kind": "bin", "badge": "Binary · top-tier", "badge_class": "b-bin",
+     "desc": "<mechanism + forward consequence; figures with basis + source; reaction size only in trailing parens>",
+     "when": "<Thu Sep 10 · **08:30 ET** · **20:30 GMT+8**>", "date": "<YYYY-MM-DD>", "ticker": "<TICKER if single-name>", "event_type": "<earnings|exdiv|macro|auction|fed|index|lockup|opex|other>"}
+  ],
+  "conditions_tone": "<1–2 sentences reading the API snapshot: what the levels say together; name the promoted extreme if any>",
+  "timeline": [
+    {"date": "<YYYY-MM-DD inside coverage>", "time_et": "<HH:MM or null>", "time_label": "<08:30 ET | Pre-open | All session | AMC>", "kind": "<bin|macro|flow|news|exdiv>", "label": "<what>", "why": "<why it matters for the window>", "consensus": "<cons · prior | null>", "grade": 3, "ticker": "<TICKER if earnings/exdiv>", "event_type": "<earnings|exdiv|macro|auction|fed|index|lockup|opex|other>"}
+  ],
+  "news": [
+    {"text": "<actor + action + date → mechanism → consequence (reaction in trailing parens)>", "grade": 2, "direction": "<off|pos|neutral>", "direction_label": "<Risk-off | Positive for semis | Two-sided>", "tag": "<scope · tier + outlet · date · confirmed/unconfirmed>"}
+  ],
+  "symbols": [
+    {"ticker": "<TICKER>", "grade": 2, "pills": ["<⚠ binary|overhang|flow|capital return|ex-div|[FILED]|[REPORTED]|rumor · unconfirmed>"], "summary": "<one clause>",
+     "bullets": ["<cause-first bullet with figures + basis>"], "source": "<highest-tier source + date>",
+     "events": [{"event_type": "<earnings|exdiv|...>", "date": "<YYYY-MM-DD>"}]}
+  ],
+  "calendar": {
+    "<YYYY-MM-DD hold-window trading day>": [{"text": "<⚠ CPI Aug 08:30>", "class": "<e-bin|e-macro|e-exdiv|e-flow|e-pos|e-struct>", "ticker": "<TICKER if earnings/exdiv>", "event_type": "<earnings|exdiv|...>"}]
+  },
+  "edge": "<dated items just past the window edge: **Thu Sep 24** — … · **Fri Sep 25** — …>",
+  "bottom_line": "<1–2 sentences: posture, driver, next dated pivot, moment to be careful, short-leg note>",
+  "cut_for_cause": [{"item": "<candidate>", "reason": "<2–6 words>"}],
+  "assumptions": ["<every default made, conflict flagged, source gap, failed gatherer, QC summary line>"]
+}

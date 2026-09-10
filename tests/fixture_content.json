@@ -1,0 +1,61 @@
+{
+  "toplead": "**Oil above $100 after the US struck Iranian tankers is the tape driver** — the energy pass-through lands in this morning's PPI (08:30 ET) and tomorrow's CPI (Fri 08:30 ET), which together decide the Sep 16 FOMC hike; a confirmed Iran–Oman Hormuz deal or a soft CPI takes the hike off the table.",
+  "heads_up": [
+    {"title": "Aug PPI 08:30 ET — first inflation read since Brent broke $100", "grade": 3, "kind": "bin", "badge": "Binary · top-tier", "badge_class": "b-bin",
+     "desc": "Consensus headline +0.3% m/m, core +0.2% (Bloomberg survey). Energy pass-through from the Iranian-tanker strikes (Brent $100.4 on Sep 9) raises the upside-surprise risk; a hot print hardens the ~60% Sep 16 hike odds priced by fed funds futures.",
+     "when": "Thu Sep 10 · **08:30 ET** · **20:30 GMT+8**", "date": "2026-09-10", "event_type": "macro"},
+    {"title": "ORCL Q1 FY27 earnings after the close", "grade": 3, "kind": "bin", "badge": "Single-name binary", "badge_class": "b-name",
+     "desc": "Only watchlist earnings in the window. Consensus EPS $1.74 adjusted (Yahoo/S&P Global) — Zacks shows $1.39, so the basis matters; revenue $19.13B. Cloud/RPO commentary is the swing factor after the EU cloud-bundling probe was opened Sep 3.",
+     "when": "Thu Sep 10 · **after 16:00 ET** · after **04:00 GMT+8 (Fri)**", "date": "2026-09-10", "ticker": "ORCL", "event_type": "earnings"},
+    {"title": "30-yr Treasury auction 13:00 ET at a 19-year-high yield", "grade": 2, "kind": "macro", "badge": "Broad · rates", "badge_class": "b-broad",
+     "desc": "$22B reopening prices with the 30-yr at ~5.35%; yesterday's 10-yr tailed 1.4bp with dealers taking 18%. A second tail confirms the duration-demand problem into CPI; a clean stop relieves the long end.",
+     "when": "Thu Sep 10 · **13:00 ET** · **01:00 GMT+8 (Fri)**", "date": "2026-09-10", "event_type": "auction"},
+    {"title": "Aug CPI Fri 08:30 ET — gating print for the FOMC hike", "grade": 3, "kind": "bin", "badge": "Binary · top-tier", "badge_class": "b-bin",
+     "desc": "Core consensus +0.3% m/m / 2.4% y/y (Cleveland Fed nowcast 2.38%). Lands one hour before the coverage window closes; the Sep 16 decision is effectively priced off this number.",
+     "when": "Fri Sep 11 · **08:30 ET** · **20:30 GMT+8**", "date": "2026-09-11", "event_type": "macro"},
+    {"title": "NVDA ex-dividend today ($0.01) — negligible; SPY ex-div Sep 18 is the one that matters", "grade": 1, "kind": "exdiv", "badge": "Carried positions", "badge_class": "b-exdiv",
+     "desc": "NVDA goes ex today for $0.01 (no assignment risk at that size). SPY's ~$1.85 ex-div on Fri Sep 18 coincides with quad-witching — ITM short calls face early-assignment risk on Sep 17.",
+     "when": "Ex-dates **Sep 10** (NVDA) · **Sep 18** (SPY)", "date": "2026-09-10", "ticker": "NVDA", "event_type": "exdiv"}
+  ],
+  "conditions_tone": "Risk-off open: SPY −0.5% and QQQ −0.9% on the oil spike, VIX up 7% to ~17.7 but still below 20, and the long end pinned at cycle highs (30Y 5.35%) ahead of the auction. Fear & Greed 36 (Fear) is drifting lower without capitulation.",
+  "timeline": [
+    {"date": "2026-09-10", "time_et": "08:30", "time_label": "08:30 ET", "kind": "bin", "label": "Aug PPI", "why": "First inflation print after the oil break; sets the tone into CPI.", "consensus": "headline +0.3% m/m · core +0.2% · prior +0.1%", "grade": 3, "event_type": "macro"},
+    {"date": "2026-09-10", "time_et": "08:15", "time_label": "08:15 ET", "kind": "macro", "label": "ECB decision", "why": "Hold expected; Lagarde presser 08:45 ET. Euro-rates spillover to Treasuries is the only channel that matters here.", "consensus": "deposit rate 2.00% unch.", "grade": 1, "event_type": "macro"},
+    {"date": "2026-09-10", "time_et": "13:00", "time_label": "13:00 ET", "kind": "macro", "label": "30-yr Treasury auction ($22B reopening)", "why": "Tail vs when-issued and dealer takedown are the tells after yesterday's soft 10-yr.", "consensus": null, "grade": 2, "event_type": "auction"},
+    {"date": "2026-09-10", "time_et": null, "time_label": "AMC", "kind": "bin", "label": "ORCL Q1 FY27 earnings", "why": "Cloud growth and RPO are the swing factors; stock −2.6% Sep 9 into the print.", "consensus": "EPS $1.74 adj. (Yahoo) · rev $19.13B", "grade": 3, "ticker": "ORCL", "event_type": "earnings"},
+    {"date": "2026-09-10", "time_et": null, "time_label": "All session", "kind": "news", "label": "Headline band: US–Iran tanker strikes · Hormuz deal chatter · oil >$99", "why": "Unscheduled driver; a confirmed Iran–Oman safe-passage deal would reverse the oil premium intraday.", "consensus": null, "grade": 3},
+    {"date": "2026-09-11", "time_et": "08:30", "time_label": "08:30 ET", "kind": "bin", "label": "Aug CPI", "why": "Gating print for the Sep 16 FOMC; lands one hour before coverage ends.", "consensus": "core +0.3% m/m · 2.4% y/y", "grade": 3, "event_type": "macro"}
+  ],
+  "news": [
+    {"text": "US Central Command destroyed Iranian crude tankers (Sep 8–9) in retaliation for an IRGC missile attack on a US warship — Brent closed above $100 for the first time since July, and the inflation channel now runs straight into PPI/CPI (WTI +3.5% this morning).", "grade": 3, "direction": "off", "direction_label": "Risk-off / oil-long", "tag": "broad · Tier 1 (CENTCOM statement, Reuters) · Sep 9"},
+    {"text": "Bloomberg reports an Iran–Oman Strait of Hormuz safe-passage deal is 'days away' — a confirmation would strip the supply premium out of crude as fast as the strikes added it.", "grade": 2, "direction": "pos", "direction_label": "Potential oil-bearish", "tag": "broad · Tier 2 (Bloomberg, single-source) · Sep 7 · unconfirmed"},
+    {"text": "Intel plans a ~10% PC CPU price increase effective Oct 5, its third of 2026, prioritising margin over share (DigiTimes; not confirmed by Intel) — INTC +9% Sep 8 then −5.5% Sep 9.", "grade": 1, "direction": "neutral", "direction_label": "Single-name", "tag": "INTC · Tier 3 only · [REPORTED — unconfirmed]"}
+  ],
+  "symbols": [
+    {"ticker": "ORCL", "grade": 3, "pills": ["⚠ binary"], "summary": "Q1 FY27 earnings AMC today · EPS $1.74 adj. / rev $19.13B consensus",
+     "bullets": ["Reports after the close; consensus EPS $1.74 adjusted (Yahoo/S&P Global), rev $19.13B. Zacks shows $1.39 — basis differs, so read the print against the company's own guidance.", "EU antitrust probe into cloud-service bundling (opened Sep 3) is the live overhang; no resolution date."],
+     "source": "Oracle IR (date confirmed); Yahoo Finance + Nasdaq calendars (consensus).", "events": [{"event_type": "earnings", "date": "2026-09-10"}]},
+    {"ticker": "INTC", "grade": 1, "pills": ["[REPORTED]"], "summary": "reported 10% CPU price hike Oct 5 — Tier 3 only",
+     "bullets": ["DigiTimes reports a ~10% PC CPU price increase effective Oct 5 (third of 2026). Not confirmed by Intel; treat as unverified until an Intel statement or Tier 1/2 report."],
+     "source": "DigiTimes via VideoCardz (Tier 3); price action Yahoo Finance."}
+  ],
+  "calendar": {
+    "2026-09-10": [{"text": "⚠ PPI Aug 08:30", "class": "e-bin"}, {"text": "30-yr auction 13:00 · ECB 08:15", "class": "e-macro"}, {"text": "⚠ ORCL earnings AMC", "class": "e-bin", "ticker": "ORCL", "event_type": "earnings"}],
+    "2026-09-11": [{"text": "⚠ CPI Aug 08:30", "class": "e-bin"}, {"text": "UMich prelim 10:00", "class": "e-macro"}],
+    "2026-09-15": [{"text": "⚠ FOMC day 1", "class": "e-bin"}, {"text": "IWM ex-div (verify)", "class": "e-exdiv"}],
+    "2026-09-16": [{"text": "⚠ FOMC decision 14:00 + SEP", "class": "e-bin"}, {"text": "Retail sales 08:30", "class": "e-macro"}],
+    "2026-09-18": [{"text": "⚠ Quad witching / OpEx", "class": "e-struct"}, {"text": "SPY ex-div ~$1.85", "class": "e-exdiv"}],
+    "2026-09-21": [{"text": "AVGO ex-div", "class": "e-exdiv"}]
+  },
+  "edge": "**Thu Sep 24** — SPCX next lockup tranche · **~Fri Sep 25** — Aug PCE · no watchlist earnings until late October.",
+  "bottom_line": "Posture is **risk-off into a two-print inflation gauntlet**: PPI this morning and CPI tomorrow morning decide the Sep 16 hike with oil above $100 doing the pushing, and the 30-yr auction at 13:00 is the intraday rates test. ORCL after the close is the only single-name binary — the consensus basis is split ($1.74 adj. vs $1.39), so judge the reaction on guidance, not the EPS headline. Manage ITM short calls on SPY before the Sep 18 ex-div.",
+  "cut_for_cause": [
+    {"item": "AMD CFO $3T AI TAM comment (Sep 8)", "reason": "Tier 3 only, reaction absorbed, no dated follow-up"},
+    {"item": "NBIS–PLTR sovereign AI partnership (Sep 8)", "reason": "two-day-old, priced (+10%), no in-window event"}
+  ],
+  "assumptions": [
+    "PPI/CPI consensus figures from Bloomberg survey as reported by Reuters (Sep 9); Cleveland Fed nowcast for core CPI.",
+    "30-yr auction size ($22B) from the Treasury tentative schedule; 10-yr tail figure from the Treasury auction results PDF (Sep 9).",
+    "SPY Sep 18 ex-div amount (~$1.85) is an estimate from last quarter's distribution; SSGA declares the amount on Sep 17."
+  ]
+}

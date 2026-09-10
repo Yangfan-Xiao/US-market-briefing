@@ -1,0 +1,34 @@
+{
+  "_note": "Edit this file to change coverage. 'yahoo' is the Yahoo Finance ticker used by scripts; 'search_names' are the strings gatherers use in queries. Groups are the gatherer batches (edit freely; keep 4-6 names per group).",
+  "symbols": [
+    {"ticker": "SPY",  "yahoo": "SPY",  "type": "etf",   "search_names": ["SPY ETF", "S&P 500"]},
+    {"ticker": "QQQ",  "yahoo": "QQQ",  "type": "etf",   "search_names": ["QQQ ETF", "Nasdaq-100"]},
+    {"ticker": "IWM",  "yahoo": "IWM",  "type": "etf",   "search_names": ["IWM ETF", "Russell 2000"]},
+    {"ticker": "$VIX", "yahoo": "^VIX", "type": "index", "search_names": ["VIX", "volatility index"]},
+    {"ticker": "USO",  "yahoo": "USO",  "type": "etf",   "search_names": ["USO ETF", "WTI crude oil"]},
+    {"ticker": "MSFT", "yahoo": "MSFT", "type": "stock", "search_names": ["Microsoft"]},
+    {"ticker": "GOOGL","yahoo": "GOOGL","type": "stock", "search_names": ["Alphabet", "Google"]},
+    {"ticker": "AMZN", "yahoo": "AMZN", "type": "stock", "search_names": ["Amazon"]},
+    {"ticker": "META", "yahoo": "META", "type": "stock", "search_names": ["Meta Platforms"]},
+    {"ticker": "NVDA", "yahoo": "NVDA", "type": "stock", "search_names": ["Nvidia"]},
+    {"ticker": "TSLA", "yahoo": "TSLA", "type": "stock", "search_names": ["Tesla"]},
+    {"ticker": "AMD",  "yahoo": "AMD",  "type": "stock", "search_names": ["AMD", "Advanced Micro Devices"]},
+    {"ticker": "AVGO", "yahoo": "AVGO", "type": "stock", "search_names": ["Broadcom"]},
+    {"ticker": "NBIS", "yahoo": "NBIS", "type": "stock", "search_names": ["Nebius"]},
+    {"ticker": "ORCL", "yahoo": "ORCL", "type": "stock", "search_names": ["Oracle"]},
+    {"ticker": "INTC", "yahoo": "INTC", "type": "stock", "search_names": ["Intel"]},
+    {"ticker": "NOW",  "yahoo": "NOW",  "type": "stock", "search_names": ["ServiceNow"]},
+    {"ticker": "PLTR", "yahoo": "PLTR", "type": "stock", "search_names": ["Palantir"]},
+    {"ticker": "HOOD", "yahoo": "HOOD", "type": "stock", "search_names": ["Robinhood"]},
+    {"ticker": "COIN", "yahoo": "COIN", "type": "stock", "search_names": ["Coinbase"]},
+    {"ticker": "MSTR", "yahoo": "MSTR", "type": "stock", "search_names": ["Strategy", "MicroStrategy"]},
+    {"ticker": "WMT",  "yahoo": "WMT",  "type": "stock", "search_names": ["Walmart"]},
+    {"ticker": "SPCX", "yahoo": "SPCX", "type": "stock", "search_names": ["SpaceX"]}
+  ],
+  "gather_groups": {
+    "G-A_index_macro_names": ["SPY", "QQQ", "IWM", "$VIX", "USO", "WMT"],
+    "G-B_megacap":           ["MSFT", "GOOGL", "AMZN", "META", "NOW", "ORCL"],
+    "G-C_semis_ai":          ["NVDA", "AMD", "AVGO", "INTC", "NBIS", "PLTR"],
+    "G-D_highbeta":          ["TSLA", "HOOD", "COIN", "MSTR", "SPCX"]
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Briefing content (what the writer produces; everything else is computed)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["toplead", "heads_up", "conditions_tone", "timeline", "news", "symbols", "calendar", "edge", "bottom_line", "cut_for_cause", "assumptions"],
+  "$defs": {
+    "grade": {"type": "integer", "minimum": 1, "maximum": 3},
+    "text": {"type": "string", "minLength": 1, "maxLength": 900},
+    "short": {"type": "string", "minLength": 1, "maxLength": 200},
+    "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "hhmm": {"type": ["string", "null"], "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"},
+    "kind": {"type": "string", "enum": ["bin", "macro", "flow", "news", "exdiv"]},
+    "tl_kind": {"type": "string", "enum": ["bin", "macro", "flow", "news", "exdiv", "open", "close"]},
+    "event_type": {"type": "string", "enum": ["earnings", "exdiv", "macro", "auction", "fed", "index", "lockup", "opex", "other"]},
+    "pill": {"type": "string", "enum": ["⚠ binary", "overhang", "flow", "capital return", "ex-div", "[FILED]", "[REPORTED]", "rumor · unconfirmed"]},
+    "chip_class": {"type": "string", "enum": ["e-bin", "e-macro", "e-exdiv", "e-flow", "e-pos", "e-struct", "e-quiet"]}
+  },
+  "properties": {
+    "toplead": {"$ref": "#/$defs/text", "description": "ONE declarative sentence: driver + mechanism + what resolves/invalidates it. No 'whether'."},
+    "heads_up": {
+      "type": "array", "minItems": 1, "maxItems": 5,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["title", "grade", "kind", "badge", "badge_class", "desc"],
+        "properties": {
+          "title": {"$ref": "#/$defs/short"},
+          "grade": {"$ref": "#/$defs/grade"},
+          "kind": {"$ref": "#/$defs/kind"},
+          "badge": {"$ref": "#/$defs/short"},
+          "badge_class": {"type": "string", "enum": ["b-bin", "b-broad", "b-name", "b-exdiv"]},
+          "desc": {"$ref": "#/$defs/text"},
+          "when": {"type": ["string", "null"], "maxLength": 200},
+          "date": {"$ref": "#/$defs/date"},
+          "ticker": {"type": "string", "maxLength": 8},
+          "event_type": {"$ref": "#/$defs/event_type"}
+        }
+      }
+    },
+    "conditions_tone": {"$ref": "#/$defs/text"},
+    "timeline": {
+      "type": "array", "minItems": 0, "maxItems": 24,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["date", "time_et", "time_label", "kind", "label", "why"],
+        "properties": {
+          "date": {"$ref": "#/$defs/date"},
+          "time_et": {"$ref": "#/$defs/hhmm", "description": "24h ET clock time, or null for Pre-open / All session / AMC items"},
+          "time_label": {"$ref": "#/$defs/short", "description": "e.g. '08:30 ET', 'Pre-open', 'All session', 'AMC (after 16:00)'"},
+          "kind": {"$ref": "#/$defs/tl_kind"},
+          "label": {"$ref": "#/$defs/short"},
+          "why": {"$ref": "#/$defs/text"},
+          "consensus": {"type": ["string", "null"], "maxLength": 200},
+          "grade": {"anyOf": [{"$ref": "#/$defs/grade"}, {"type": "null"}]},
+          "ticker": {"type": "string", "maxLength": 8},
+          "event_type": {"$ref": "#/$defs/event_type"}
+        }
+      }
+    },
+    "news": {
+      "type": "array", "minItems": 0, "maxItems": 8,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["text", "grade", "direction", "direction_label", "tag"],
+        "properties": {
+          "text": {"$ref": "#/$defs/text"},
+          "grade": {"$ref": "#/$defs/grade"},
+          "direction": {"type": "string", "enum": ["off", "pos", "neutral"]},
+          "direction_label": {"$ref": "#/$defs/short", "description": "e.g. 'Risk-off', 'Positive for semis', 'Two-sided'"},
+          "tag": {"$ref": "#/$defs/short", "description": "scope · source tier · dated context"}
+        }
+      }
+    },
+    "symbols": {
+      "type": "array", "minItems": 0, "maxItems": 12,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["ticker", "grade", "pills", "summary", "bullets", "source"],
+        "properties": {
+          "ticker": {"type": "string", "minLength": 2, "maxLength": 8},
+          "grade": {"$ref": "#/$defs/grade"},
+          "pills": {"type": "array", "minItems": 1, "maxItems": 3, "items": {"$ref": "#/$defs/pill"}},
+          "summary": {"$ref": "#/$defs/short"},
+          "bullets": {"type": "array", "minItems": 1, "maxItems": 4, "items": {"$ref": "#/$defs/text"}},
+          "source": {"$ref": "#/$defs/text"},
+          "events": {
+            "type": "array", "maxItems": 4,
+            "items": {"type": "object", "additionalProperties": false,
+                      "required": ["event_type", "date"],
+                      "properties": {"event_type": {"$ref": "#/$defs/event_type"}, "date": {"$ref": "#/$defs/date"}}}
+          }
+        }
+      }
+    },
+    "calendar": {
+      "type": "object",
+      "description": "keys = YYYY-MM-DD hold-window trading days; values = chips (max 4 per day)",
+      "additionalProperties": {
+        "type": "array", "maxItems": 4,
+        "items": {"type": "object", "additionalProperties": false, "required": ["text", "class"],
+                  "properties": {"text": {"type": "string", "minLength": 1, "maxLength": 60},
+                                 "class": {"$ref": "#/$defs/chip_class"},
+                                 "ticker": {"type": "string", "maxLength": 8},
+                                 "event_type": {"$ref": "#/$defs/event_type"}}}
+      }
+    },
+    "edge": {"$ref": "#/$defs/text"},
+    "bottom_line": {"$ref": "#/$defs/text"},
+    "cut_for_cause": {
+      "type": "array", "maxItems": 20,
+      "items": {"type": "object", "additionalProperties": false, "required": ["item", "reason"],
+                "properties": {"item": {"$ref": "#/$defs/short"}, "reason": {"$ref": "#/$defs/short"}}}
+    },
+    "assumptions": {"type": "array", "maxItems": 20, "items": {"$ref": "#/$defs/text"}}
+  }
+}

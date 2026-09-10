@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>US Market Briefing — Thu Sep 10</title>
+<style>
+  :root{
+    --bg:#0a0d14; --panel:#121826; --panel2:#0f1420; --border:#222b3d;
+    --text:#dfe5ef; --muted:#8b94a8; --faint:#5d6577;
+    --bin:#ff5a5a; --macro:#4aa3ff; --earn:#b07cff; --exdiv:#ffc14d;
+    --struct:#ff7a7a; --flow:#2dd4bf; --news:#9aa6bd; --pos:#3ed598; --neg:#ff6b6b;
+    --chip:#1b2333;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:22px 20px 60px}
+  a{color:var(--macro);text-decoration:none}
+  a:hover{text-decoration:underline}
+  h1{font-size:23px;margin:0 0 2px;font-weight:700;letter-spacing:-.2px}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);
+    margin:34px 0 14px;font-weight:600;display:flex;align-items:center;gap:9px}
+  h2 .n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
+    border:1px solid var(--border);border-radius:5px;font-size:11px;color:var(--faint)}
+  h2 .note{text-transform:none;letter-spacing:0;color:var(--faint);font-weight:400;font-size:11px}
+  .sub{color:var(--muted);font-size:13.5px;margin:0}
+  .sub b{color:var(--text)}
+  /* header */
+  header{border:1px solid var(--border);border-radius:14px;padding:18px 20px;
+    background:linear-gradient(160deg,#131a2b,#0e1320)}
+  .hrow{display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px;align-items:flex-start}
+  .clocks{display:flex;gap:18px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+  .clock{text-align:right}
+  .clock .lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--faint)}
+  .clock .val{font-size:15px;color:var(--text);font-weight:600}
+  .toplead{margin-top:14px;padding:11px 14px;border-radius:10px;background:#1a1322;
+    border:1px solid #3a2330;font-size:14px}
+  .toplead b{color:var(--bin)}
+  .countdown{margin-top:10px;font-size:12.5px;color:var(--muted)}
+  .countdown b{color:var(--flow);font-variant-numeric:tabular-nums}
+  /* importance grade (1–3, 3 = highest) */
+  .grade{font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;letter-spacing:.4px;
+    white-space:nowrap;font-variant-numeric:tabular-nums;vertical-align:middle}
+  .g3{background:#3a1414;color:#ff8a8a;border:1px solid #5a1f1f}
+  .g2{background:#33280a;color:#ffd27a;border:1px solid #5a4514}
+  .g1{background:#1b2333;color:#9aa6bd;border:1px solid var(--border)}
+  /* heads up */
+  .hu{display:flex;flex-direction:column;gap:10px}
+  .card{border:1px solid var(--border);border-radius:11px;background:var(--panel);
+    padding:13px 15px;border-left-width:4px}
+  .card.bin{border-left-color:var(--bin)}
+  .card.flow{border-left-color:var(--flow)}
+  .card.macro{border-left-color:var(--macro)}
+  .card.news{border-left-color:var(--news)}
+  .card.exdiv{border-left-color:var(--exdiv)}
+  .hu .top{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+  .hu .ttl{font-weight:650;font-size:15px}
+  .hu .desc{color:var(--muted);font-size:13.5px;margin-top:3px}
+  .hu .desc b{color:var(--text)}
+  .badges{display:inline-flex;gap:6px;align-items:center}
+  .badge{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:20px;
+    text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+  .b-bin{background:#3a1414;color:#ff8a8a;border:1px solid #5a1f1f}
+  .b-broad{background:#11283a;color:#7fc0ff;border:1px solid #1d3f5c}
+  .b-name{background:#241a36;color:#c4a3ff;border:1px solid #3a2a55}
+  .b-exdiv{background:#33280a;color:#ffd27a;border:1px solid #5a4514}
+  .time{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .time b{color:var(--text);font-weight:600}
+  .warn{color:var(--bin);font-weight:700}
+  /* conditions */
+  .cond{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px}
+  .metric{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:11px 13px}
+  .metric .k{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--faint)}
+  .metric .v{font-size:18px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}
+  .metric .d{font-size:12px;margin-top:1px}
+  .metric .asof{font-size:10.5px;color:var(--faint);margin-top:2px}
+  .up{color:var(--pos)} .down{color:var(--neg)} .flat{color:var(--muted)}
+  .tone{margin-top:12px;font-size:13.5px;color:var(--muted);border-left:3px solid var(--border);
+    padding:2px 0 2px 12px}
+  /* timeline */
+  .tl{border:1px solid var(--border);border-radius:12px;background:var(--panel2);padding:20px 18px 14px}
+  .axis{position:relative;height:7px;background:#0a0e17;border-radius:4px;margin:30px 0}
+  .sess{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,#16314a,#13283c);
+    border-radius:4px;border:1px solid #1d3f5c}
+  .tick{position:absolute;top:-24px;transform:translateX(-50%);font-size:10.5px;color:var(--faint);
+    text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .tick:after{content:"";position:absolute;left:50%;top:21px;width:1px;height:7px;background:#2a3346}
+  .tickb{position:absolute;bottom:-24px;transform:translateX(-50%);font-size:10.5px;color:var(--faint);
+    font-variant-numeric:tabular-nums;white-space:nowrap}
+  .tickb:before{content:"";position:absolute;left:50%;bottom:21px;width:1px;height:7px;background:#2a3346}
+  .axlbl{position:absolute;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--faint)}
+  .mk{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;transform:translate(-50%,-50%);
+    border:2px solid var(--bg);cursor:default;z-index:2}
+  .mk.bin{background:var(--bin)} .mk.macro{background:var(--macro)}
+  .mk.flow{background:var(--flow)} .mk.open{background:#cfd6e4} .mk.close{background:#6b7387}
+  .mk.news{background:var(--news)} .mk.exdiv{background:var(--exdiv)}
+  .mk.past{opacity:.35}
+  .elapsed{position:absolute;left:0;top:0;bottom:0;background:rgba(5,7,12,.62);border-radius:4px 0 0 4px;
+    display:none;z-index:1;pointer-events:none}
+  .nowline{position:absolute;top:-13px;bottom:-13px;width:2px;background:var(--flow);border-radius:1px;
+    transform:translateX(-50%);display:none;z-index:3;box-shadow:0 0 7px rgba(45,212,191,.55);pointer-events:none}
+  .evlist{margin-top:30px;display:flex;flex-direction:column;gap:0}
+  .evday{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--faint);
+    padding:12px 0 3px;border-top:1px solid #1a2233;margin-top:4px}
+  .evday b{color:var(--muted)}
+  .ev{display:grid;grid-template-columns:128px 14px 1fr;gap:11px;align-items:flex-start;
+    padding:9px 0;border-top:1px solid #1a2233}
+  .evday + .ev{border-top:none}
+  .ev .et{font-size:12.5px;color:var(--text);font-variant-numeric:tabular-nums;font-weight:600}
+  .ev .gt{font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums}
+  .dot{width:11px;height:11px;border-radius:50%;margin-top:4px}
+  .d-bin{background:var(--bin)} .d-macro{background:var(--macro)} .d-flow{background:var(--flow)}
+  .d-open{background:#cfd6e4} .d-close{background:#6b7387} .d-news{background:var(--news)} .d-exdiv{background:var(--exdiv)}
+  .ev .lab{font-weight:600;font-size:14px}
+  .ev .why{color:var(--muted);font-size:12.5px;margin-top:1px}
+  .ev .cons{font-size:11.5px;color:var(--faint);margin-top:2px;font-variant-numeric:tabular-nums}
+  .legend{display:flex;flex-wrap:wrap;gap:13px;margin-top:14px;font-size:11.5px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+  /* news */
+  .news-list{display:flex;flex-direction:column;gap:9px;counter-reset:n}
+  .ni{display:flex;gap:12px;border:1px solid var(--border);border-radius:10px;background:var(--panel);
+    padding:11px 14px}
+  .ni .num{counter-increment:n;color:var(--faint);font-weight:700;font-size:13px;min-width:16px}
+  .ni .num:before{content:counter(n)}
+  .ni .htxt{font-size:14px}
+  .ni .tag{display:block;margin-top:4px;font-size:11.5px;color:var(--muted)}
+  .ni .tag em{font-style:normal;color:var(--flow)}
+  .ni .tag .off{color:var(--neg)}
+  .ni .tag .pos{color:var(--pos)}
+  /* symbol cards */
+  details.sym{border:1px solid var(--border);border-radius:10px;background:var(--panel);
+    margin-bottom:8px;overflow:hidden}
+  details.sym>summary{list-style:none;cursor:pointer;padding:11px 14px;display:flex;
+    align-items:center;gap:11px;flex-wrap:wrap}
+  details.sym>summary::-webkit-details-marker{display:none}
+  .tkr{font-weight:800;font-size:15px;letter-spacing:.3px;min-width:54px}
+  .sumline{color:var(--muted);font-size:13px;flex:1;min-width:160px}
+  .chev{color:var(--faint);font-size:12px;transition:transform .15s}
+  details[open] .chev{transform:rotate(90deg)}
+  .symbody{padding:0 14px 13px 14px;border-top:1px solid #1a2233;margin-top:2px}
+  .symbody ul{margin:10px 0 4px;padding-left:18px}
+  .symbody li{margin:5px 0;font-size:13.5px}
+  .pill{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;text-transform:uppercase;
+    letter-spacing:.5px}
+  .p-bin{background:#3a1414;color:#ff8a8a} .p-exdiv{background:#33280a;color:#ffd27a}
+  .p-flow{background:#0c2e2a;color:#5eead4} .p-filed{background:#1b2333;color:#9aa6bd;border:1px solid var(--border)}
+  .p-pos{background:#0e2e1e;color:#5fe0a3}
+  .src{font-size:11px;color:var(--faint)}
+  /* window calendar */
+  .cal{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:9px}
+  .day{border:1px solid var(--border);border-radius:10px;background:var(--panel);padding:10px 11px;
+    min-height:104px;display:flex;flex-direction:column}
+  .day.closed{background:#1c1113;border-color:#3a1e22}
+  .day.focus{border-color:#1d3f5c;box-shadow:inset 0 0 0 1px #1d3f5c}
+  .day .dh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .day .dd{font-weight:700;font-size:14px}
+  .day .dw{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--faint)}
+  .day .hd{color:var(--bin);font-weight:700;font-size:12.5px;margin:auto 0}
+  .day .hd span{font-weight:400;color:var(--muted);font-size:11px}
+  .echip{font-size:11px;padding:3px 7px;border-radius:6px;margin:2px 0;display:inline-block;
+    line-height:1.35;border:1px solid transparent}
+  .e-bin{background:#2a1212;color:#ff9a9a;border-color:#4a1c1c}
+  .e-macro{background:#0e2236;color:#83c2ff;border-color:#173a57}
+  .e-exdiv{background:#2a210a;color:#ffd27a;border-color:#473814}
+  .e-flow{background:#0a2724;color:#5eead4;border-color:#103f39}
+  .e-pos{background:#0c2418;color:#5fe0a3;border-color:#12422c}
+  .e-struct{background:#241620;color:#e89ac0;border-color:#43243a}
+  .e-quiet{background:none;border:none;color:var(--faint);padding-left:0}
+  .edge{margin-top:11px;font-size:12.5px;color:var(--muted);border:1px dashed var(--border);
+    border-radius:9px;padding:9px 12px}
+  .edge b{color:var(--text)}
+  /* bottom line */
+  .bl{border:1px solid #2a3a52;border-radius:12px;background:linear-gradient(160deg,#121d2e,#0e1420);
+    padding:16px 18px;font-size:14.5px}
+  .bl b{color:var(--text)}
+  /* footers */
+  details.foot{border:1px solid var(--border);border-radius:10px;background:var(--panel2);margin-top:10px}
+  details.foot>summary{cursor:pointer;padding:11px 14px;font-size:12.5px;text-transform:uppercase;
+    letter-spacing:1px;color:var(--muted);font-weight:600;list-style:none}
+  details.foot>summary::-webkit-details-marker{display:none}
+  details.foot>summary:before{content:"▸ ";color:var(--faint)}
+  details.foot[open]>summary:before{content:"▾ "}
+  .footbody{padding:4px 16px 14px;font-size:13px;color:var(--muted)}
+  .footbody ul{margin:6px 0;padding-left:18px}
+  .footbody li{margin:5px 0}
+  .footbody .rsn{color:var(--faint)}
+  footer.meta{margin-top:30px;text-align:center;color:var(--faint);font-size:11.5px;line-height:1.7}
+  @media (max-width:560px){
+    .ev{grid-template-columns:104px 12px 1fr}
+    .clock{text-align:left}
+    h1{font-size:20px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="hrow">
+    <div>
+      <h1>US Market Briefing</h1>
+      <p class="sub">Coverage: <b>Thu Sep 10, 2026 08:45 ET</b> → <b>Fri Sep 11, 09:30 ET</b> open (Fri Sep 11, 21:30 GMT+8) · 24.8h
+        · sessions in window: Thu 09-10 (full)</p>
+    </div>
+    <div class="clocks">
+      <div class="clock"><div class="lbl">Now · ET</div><div class="val" id="now-et">—</div></div>
+      <div class="clock"><div class="lbl">Now · GMT+8</div><div class="val" id="now-cn">—</div></div>
+    </div>
+  </div>
+  <div class="toplead">Single most important thing: <b>Oil above $100 after the US struck Iranian tankers is the tape driver</b> — the energy pass-through lands in this morning's PPI (08:30 ET) and tomorrow's CPI (Fri 08:30 ET), which together decide the Sep 16 FOMC hike; a confirmed Iran–Oman Hormuz deal or a soft CPI takes the hike off the table.</div>
+  <div class="countdown" id="cd">…</div>
+</header>
+
+<!-- 1 · HEADS UP -->
+<h2><span class="n">1</span> Heads-up · top 5 <span class="note">· grade 3 = must-watch · 2 = material · 1 = context</span></h2>
+<div class="hu">
+  <div class="card bin">
+    <div class="top">
+      <span class="ttl"><span class="warn">⚠</span> Aug PPI 08:30 ET — first inflation read since Brent broke $100</span>
+      <span class="badges"><span class="grade g3" title="importance 3 of 3">3/3</span><span class="badge b-bin">Binary · top-tier</span></span>
+    </div>
+    <div class="desc">Consensus headline +0.3% m/m, core +0.2% (Bloomberg survey). Energy pass-through from the Iranian-tanker strikes (Brent $100.4 on Sep 9) raises the upside-surprise risk; a hot print hardens the ~60% Sep 16 hike odds priced by fed funds futures.</div>
+<div class="time" style="margin-top:6px">Thu Sep 10 · <b>08:30 ET</b> · <b>20:30 GMT+8</b></div>  </div>
+  <div class="card bin">
+    <div class="top">
+      <span class="ttl"><span class="warn">⚠</span> ORCL Q1 FY27 earnings after the close</span>
+      <span class="badges"><span class="grade g3" title="importance 3 of 3">3/3</span><span class="badge b-name">Single-name binary</span></span>
+    </div>
+    <div class="desc">Only watchlist earnings in the window. Consensus EPS $1.74 adjusted (Yahoo/S&amp;P Global) — Zacks shows $1.39, so the basis matters; revenue $19.13B. Cloud/RPO commentary is the swing factor after the EU cloud-bundling probe was opened Sep 3.</div>
+<div class="time" style="margin-top:6px">Thu Sep 10 · <b>after 16:00 ET</b> · after <b>04:00 GMT+8 (Fri)</b></div>  </div>
+  <div class="card macro">
+    <div class="top">
+      <span class="ttl">30-yr Treasury auction 13:00 ET at a 19-year-high yield</span>
+      <span class="badges"><span class="grade g2" title="importance 2 of 3">2/3</span><span class="badge b-broad">Broad · rates</span></span>
+    </div>
+    <div class="desc">$22B reopening prices with the 30-yr at ~5.35%; yesterday's 10-yr tailed 1.4bp with dealers taking 18%. A second tail confirms the duration-demand problem into CPI; a clean stop relieves the long end.</div>
+<div class="time" style="margin-top:6px">Thu Sep 10 · <b>13:00 ET</b> · <b>01:00 GMT+8 (Fri)</b></div>  </div>
+  <div class="card bin">
+    <div class="top">
+      <span class="ttl"><span class="warn">⚠</span> Aug CPI Fri 08:30 ET — gating print for the FOMC hike</span>
+      <span class="badges"><span class="grade g3" title="importance 3 of 3">3/3</span><span class="badge b-bin">Binary · top-tier</span></span>
+    </div>
+    <div class="desc">Core consensus +0.3% m/m / 2.4% y/y (Cleveland Fed nowcast 2.38%). Lands one hour before the coverage window closes; the Sep 16 decision is effectively priced off this number.</div>
+<div class="time" style="margin-top:6px">Fri Sep 11 · <b>08:30 ET</b> · <b>20:30 GMT+8</b></div>  </div>
+  <div class="card exdiv">
+    <div class="top">
+      <span class="ttl">NVDA ex-dividend today ($0.01) — negligible; SPY ex-div Sep 18 is the one that matters</span>
+      <span class="badges"><span class="grade g1" title="importance 1 of 3">1/3</span><span class="badge b-exdiv">Carried positions</span></span>
+    </div>
+    <div class="desc">NVDA goes ex today for $0.01 (no assignment risk at that size). SPY's ~$1.85 ex-div on Fri Sep 18 coincides with quad-witching — ITM short calls face early-assignment risk on Sep 17.</div>
+<div class="time" style="margin-top:6px">Ex-dates <b>Sep 10</b> (NVDA) · <b>Sep 18</b> (SPY)</div>  </div>
+</div>
+
+<!-- 2 · CONDITIONS (values come from run/market.json — never typed by hand) -->
+<h2><span class="n">2</span> Market conditions <span class="note">· API snapshot 2026-09-10 10:09 ET</span></h2>
+<div class="cond">
+  <div class="metric"><div class="k">S&amp;P 500 · SPY</div><div class="v">$756.76</div><div class="d down">▼ -0.74% vs prev close · wk -1.1%</div><div class="asof">Thu 10:08 ET · regular</div></div>
+  <div class="metric"><div class="k">Nasdaq 100 · QQQ</div><div class="v">$708.33</div><div class="d down">▼ -1.11% vs prev close · wk -0.1%</div><div class="asof">Thu 10:08 ET · regular</div></div>
+  <div class="metric"><div class="k">VIX</div><div class="v">17.89</div><div class="d up">▲ +1.43 (+8.7%) vs prev close · wk +24.9%</div><div class="asof">Thu 09:53 ET · regular</div></div>
+  <div class="metric"><div class="k">US 2-yr</div><div class="v">4.43%</div><div class="d up">▲ +4 bp vs prior close · Treasury close 09-09</div><div class="asof">2026-09-09 close</div></div>
+  <div class="metric"><div class="k">US 10-yr</div><div class="v">4.92%</div><div class="d up">▲ +8 bp vs prev close · wk +12 bp · new 6-mo high · Tsy close 09-09: 4.83%</div><div class="asof">Thu 09:53 ET · regular</div></div>
+  <div class="metric"><div class="k">US 30-yr</div><div class="v">5.35%</div><div class="d up">▲ +6 bp vs prev close · wk +8 bp · new 6-mo high · Tsy close 09-09: 5.28%</div><div class="asof">Thu 09:53 ET · regular</div></div>
+  <div class="metric"><div class="k">WTI crude</div><div class="v">$99.21</div><div class="d up">▲ +3.29% vs prev close · wk +9.0%</div><div class="asof">Thu 09:59 ET · regular</div></div>
+  <div class="metric"><div class="k">CNN Fear &amp; Greed</div><div class="v">37</div><div class="d down">Fear · prev 39 · 1w 44 · 1m 65</div><div class="asof">Thu 10:07 ET</div></div>
+</div>
+<div class="tone">Risk-off open: SPY −0.5% and QQQ −0.9% on the oil spike, VIX up 7% to ~17.7 but still below 20, and the long end pinned at cycle highs (30Y 5.35%) ahead of the auction. Fear &amp; Greed 36 (Fear) is drifting lower without capitulation.</div>
+
+<!-- 3 · SESSION TIMELINE: single axis = focus session; dated list = everything in the coverage window -->
+<h2><span class="n">3</span> Timeline · axis: Thu Sep 10 (pre-open) <span class="note">· ET (EDT) +12h = GMT+8 · list covers the whole window</span></h2>
+<div class="tl">
+  <div class="axis">
+    <div class="sess" id="sess"></div>
+    <div class="elapsed" id="elapsed"></div>
+    <div class="nowline" id="nowline" title="now"></div>
+    <div class="axlbl" style="left:0;top:-44px">ET ▸</div>
+    <div class="axlbl" style="left:0;bottom:-44px">GMT+8 ▸</div>
+    <span class="tick" style="left:0%">04:00</span>
+    <span class="tick" style="left:25%">08:00</span>
+    <span class="tick" style="left:34.4%">09:30</span>
+    <span class="tick" style="left:50%">12:00</span>
+    <span class="tick" style="left:75%">16:00</span>
+    <span class="tick" style="left:100%">20:00</span>
+    <span class="tickb" style="left:0%">16:00</span>
+    <span class="tickb" style="left:25%">20:00</span>
+    <span class="tickb" style="left:34.4%">21:30</span>
+    <span class="tickb" style="left:50%">00:00</span>
+    <span class="tickb" style="left:75%">04:00</span>
+    <span class="tickb" style="left:100%">08:00</span>
+    <!-- markers: only events dated on the focus session with a clock time; positioned by the script -->
+    <span class="mk open" data-et="09:30" title="Cash open 09:30"></span>
+    <span class="mk close" data-et="16:00" title="Cash close 16:00"></span>
+    <span class="mk macro" data-et="08:15" title="ECB decision 08:15"></span>
+    <span class="mk bin" data-et="08:30" title="Aug PPI 08:30"></span>
+    <span class="mk macro" data-et="13:00" title="30-yr Treasury auction ($22B reopening) 13:00"></span>
+  </div>
+
+  <div class="evlist">
+    <div class="evday"><b>Thu Sep 10</b> · axis day</div>
+    <div class="ev">
+      <div><div class="et">08:15 ET</div><div class="gt">20:15 GMT+8</div></div>
+      <div class="dot d-macro"></div>
+      <div><div class="lab">ECB decision <span class="grade g1">1/3</span></div>
+<div class="cons">deposit rate 2.00% unch.</div>        <div class="why">Hold expected; Lagarde presser 08:45 ET. Euro-rates spillover to Treasuries is the only channel that matters here.</div></div>
+    </div>
+    <div class="ev">
+      <div><div class="et">08:30 ET</div><div class="gt">20:30 GMT+8</div></div>
+      <div class="dot d-bin"></div>
+      <div><div class="lab">Aug PPI <span class="grade g3">3/3</span></div>
+<div class="cons">headline +0.3% m/m · core +0.2% · prior +0.1%</div>        <div class="why">First inflation print after the oil break; sets the tone into CPI.</div></div>
+    </div>
+    <div class="ev">
+      <div><div class="et">09:30 ET</div><div class="gt">21:30 GMT+8</div></div>
+      <div class="dot d-open"></div>
+      <div><div class="lab">Cash open</div>
+        <div class="why">Opening auction — start of your trading window.</div></div>
+    </div>
+    <div class="ev">
+      <div><div class="et">All session</div><div class="gt">—</div></div>
+      <div class="dot d-news"></div>
+      <div><div class="lab">Headline band: US–Iran tanker strikes · Hormuz deal chatter · oil &gt;$99 <span class="grade g3">3/3</span></div>
+        <div class="why">Unscheduled driver; a confirmed Iran–Oman safe-passage deal would reverse the oil premium intraday.</div></div>
+    </div>
+    <div class="ev">
+      <div><div class="et">13:00 ET</div><div class="gt">01:00 GMT+8 (Fri)</div></div>
+      <div class="dot d-macro"></div>
+      <div><div class="lab">30-yr Treasury auction ($22B reopening) <span class="grade g2">2/3</span></div>
+        <div class="why">Tail vs when-issued and dealer takedown are the tells after yesterday's soft 10-yr.</div></div>
+    </div>
+    <div class="ev">
+      <div><div class="et">16:00 ET</div><div class="gt">04:00 GMT+8 (Fri)</div></div>
+      <div class="dot d-close"></div>
+      <div><div class="lab">Cash close</div>
+        <div class="why">Regular session ends; after-hours to 20:00 ET.</div></div>
+    </div>
+    <div class="ev">
+      <div><div class="et">AMC</div><div class="gt">after 04:00 GMT+8 (Fri)</div></div>
+      <div class="dot d-bin"></div>
+      <div><div class="lab">ORCL Q1 FY27 earnings <span class="grade g3">3/3</span></div>
+<div class="cons">EPS $1.74 adj. (Yahoo) · rev $19.13B</div>        <div class="why">Cloud growth and RPO are the swing factors; stock −2.6% Sep 9 into the print.</div></div>
+    </div>
+    <div class="evday"><b>Fri Sep 11</b> · coverage ends at the open</div>
+    <div class="ev">
+      <div><div class="et">08:30 ET</div><div class="gt">20:30 GMT+8</div></div>
+      <div class="dot d-bin"></div>
+      <div><div class="lab">Aug CPI <span class="grade g3">3/3</span></div>
+<div class="cons">core +0.3% m/m · 2.4% y/y</div>        <div class="why">Gating print for the Sep 16 FOMC; lands one hour before coverage ends.</div></div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:var(--bin)"></i>binary</span>
+    <span><i style="background:var(--macro)"></i>macro</span>
+    <span><i style="background:var(--flow)"></i>flow / index</span>
+    <span><i style="background:var(--exdiv)"></i>ex-div</span>
+    <span><i style="background:#cfd6e4"></i>open</span>
+    <span><i style="background:#6b7387"></i>close</span>
+    <span><i style="background:var(--news)"></i>headline</span>
+    <span><i style="background:var(--flow);width:3px;height:12px;border-radius:1px"></i>now / elapsed (live)</span>
+  </div>
+</div>
+
+<!-- 4 · NEWS -->
+<h2><span class="n">4</span> News headlines · highest impact first</h2>
+<div class="news-list">
+  <div class="ni"><div class="num"></div><div><span class="htxt">US Central Command destroyed Iranian crude tankers (Sep 8–9) in retaliation for an IRGC missile attack on a US warship — Brent closed above $100 for the first time since July, and the inflation channel now runs straight into PPI/CPI (WTI +3.5% this morning). <span class="grade g3">3/3</span></span>
+    <span class="tag"><span class="off">Risk-off / oil-long</span> · broad · Tier 1 (CENTCOM statement, Reuters) · Sep 9</span></div></div>
+  <div class="ni"><div class="num"></div><div><span class="htxt">Bloomberg reports an Iran–Oman Strait of Hormuz safe-passage deal is 'days away' — a confirmation would strip the supply premium out of crude as fast as the strikes added it. <span class="grade g2">2/3</span></span>
+    <span class="tag"><span class="pos">Potential oil-bearish</span> · broad · Tier 2 (Bloomberg, single-source) · Sep 7 · unconfirmed</span></div></div>
+  <div class="ni"><div class="num"></div><div><span class="htxt">Intel plans a ~10% PC CPU price increase effective Oct 5, its third of 2026, prioritising margin over share (DigiTimes; not confirmed by Intel) — INTC +9% Sep 8 then −5.5% Sep 9. <span class="grade g1">1/3</span></span>
+    <span class="tag">Single-name · INTC · Tier 3 only · [REPORTED — unconfirmed]</span></div></div>
+</div>
+
+<!-- 5 · SYMBOL CATALYSTS -->
+<h2><span class="n">5</span> Symbol catalysts <span class="note">· only names with a catalyst that cleared the filter</span></h2>
+<details class="sym" open>
+  <summary><span class="tkr">ORCL</span><span class="grade g3">3/3</span><span class="pill p-bin">⚠ binary</span><span class="sumline">Q1 FY27 earnings AMC today · EPS $1.74 adj. / rev $19.13B consensus</span><span class="chev">▶</span></summary>
+  <div class="symbody"><ul>
+    <li>Reports after the close; consensus EPS $1.74 adjusted (Yahoo/S&amp;P Global), rev $19.13B. Zacks shows $1.39 — basis differs, so read the print against the company's own guidance.</li>
+    <li>EU antitrust probe into cloud-service bundling (opened Sep 3) is the live overhang; no resolution date.</li>
+    <li class="src">Oracle IR (date confirmed); Yahoo Finance + Nasdaq calendars (consensus).</li>
+  </ul></div>
+</details>
+<details class="sym" open>
+  <summary><span class="tkr">INTC</span><span class="grade g1">1/3</span><span class="pill p-filed">[REPORTED]</span><span class="sumline">reported 10% CPU price hike Oct 5 — Tier 3 only</span><span class="chev">▶</span></summary>
+  <div class="symbody"><ul>
+    <li>DigiTimes reports a ~10% PC CPU price increase effective Oct 5 (third of 2026). Not confirmed by Intel; treat as unverified until an Intel statement or Tier 1/2 report.</li>
+    <li class="src">DigiTimes via VideoCardz (Tier 3); price action Yahoo Finance.</li>
+  </ul></div>
+</details>
+
+<!-- 6 · HOLD-WINDOW CALENDAR (day cards come from run/window.json; chips from content) -->
+<h2><span class="n">6</span> Hold-window calendar · next 10 sessions <span class="note">· Sep 10 – Sep 23</span></h2>
+<div class="cal">
+  <div class="day focus">
+    <div class="dh"><span class="dd">Sep 10</span><span class="dw">Thu · axis</span></div>
+<span class="echip e-bin">⚠ PPI Aug 08:30</span>
+<span class="echip e-macro">30-yr auction 13:00 · ECB 08:15</span>
+<span class="echip e-bin">⚠ ORCL earnings AMC</span>
+  </div>
+  <div class="day">
+    <div class="dh"><span class="dd">Sep 11</span><span class="dw">Fri</span></div>
+<span class="echip e-bin">⚠ CPI Aug 08:30</span>
+<span class="echip e-macro">UMich prelim 10:00</span>
+  </div>
+  <div class="day">
+    <div class="dh"><span class="dd">Sep 14</span><span class="dw">Mon</span></div>
+<span class="echip e-quiet">quiet</span>  </div>
+  <div class="day">
+    <div class="dh"><span class="dd">Sep 15</span><span class="dw">Tue</span></div>
+<span class="echip e-bin">⚠ FOMC day 1</span>
+<span class="echip e-exdiv">IWM ex-div (verify)</span>
+  </div>
+  <div class="day">
+    <div class="dh"><span class="dd">Sep 16</span><span class="dw">Wed</span></div>
+<span class="echip e-bin">⚠ FOMC decision 14:00 + SEP</span>
+<span class="echip e-macro">Retail sales 08:30</span>
+  </div>
+  <div class="day">
+    <div class="dh"><span class="dd">Sep 17</span><span class="dw">Thu</span></div>
+<span class="echip e-quiet">quiet</span>  </div>
+  <div class="day">
+    <div class="dh"><span class="dd">Sep 18</span><span class="dw">Fri</span></div>
+<span class="echip e-struct">⚠ Quad witching / OpEx</span>
+<span class="echip e-exdiv">SPY ex-div ~$1.85</span>
+  </div>
+  <div class="day">
+    <div class="dh"><span class="dd">Sep 21</span><span class="dw">Mon</span></div>
+<span class="echip e-exdiv">AVGO ex-div</span>
+  </div>
+  <div class="day">
+    <div class="dh"><span class="dd">Sep 22</span><span class="dw">Tue</span></div>
+<span class="echip e-quiet">quiet</span>  </div>
+  <div class="day">
+    <div class="dh"><span class="dd">Sep 23</span><span class="dw">Wed</span></div>
+<span class="echip e-quiet">quiet</span>  </div>
+</div>
+<div class="edge"><b>Just past the window edge</b> (Thu Sep 24 · Fri Sep 25 · Mon Sep 28): <b>Thu Sep 24</b> — SPCX next lockup tranche · <b>~Fri Sep 25</b> — Aug PCE · no watchlist earnings until late October.</div>
+
+<!-- 7 · BOTTOM LINE -->
+<h2><span class="n">7</span> Bottom line</h2>
+<div class="bl">Posture is <b>risk-off into a two-print inflation gauntlet</b>: PPI this morning and CPI tomorrow morning decide the Sep 16 hike with oil above $100 doing the pushing, and the 30-yr auction at 13:00 is the intraday rates test. ORCL after the close is the only single-name binary — the consensus basis is split ($1.74 adj. vs $1.39), so judge the reaction on guidance, not the EPS headline. Manage ITM short calls on SPY before the Sep 18 ex-div.</div>
+
+<!-- FOOTERS -->
+<details class="foot">
+  <summary>Cut for cause</summary>
+  <div class="footbody"><ul>
+    <li>AMD CFO $3T AI TAM comment (Sep 8) — <span class="rsn">Tier 3 only, reaction absorbed, no dated follow-up</span></li>
+    <li>NBIS–PLTR sovereign AI partnership (Sep 8) — <span class="rsn">two-day-old, priced (+10%), no in-window event</span></li>
+  </ul></div>
+</details>
+
+<details class="foot">
+  <summary>Assumptions / unverified / QC — audit trail</summary>
+  <div class="footbody"><ul>
+    <li><b>Window:</b> run start Thu Sep 10, 2026 08:45 ET (Thu Sep 10, 2026 20:45 GMT+8); coverage to Fri Sep 11, 09:30 ET open (24.8h); axis day Thu Sep 10 (pre-open); hold window Sep 10–Sep 23. Calendar: config/nyse_calendar.json.</li>
+    <li><b>Market data:</b> API snapshot 2026-09-10 10:09 ET. Sources: Yahoo Finance chart API (SPY); Yahoo Finance chart API (QQQ); Yahoo Finance chart API (^VIX); US Treasury daily par yield curve (home.treasury.gov); Yahoo Finance chart API (^TNX); Yahoo Finance chart API (^TYX); Yahoo Finance chart API (CL=F); CNN Fear &amp; Greed index JSON.</li>
+    <li><b>Scheduled events (API):</b> earnings in coverage: none; ex-div in hold window: none from API (ETF ex-divs need issuer check).</li>
+    <li>PPI/CPI consensus figures from Bloomberg survey as reported by Reuters (Sep 9); Cleveland Fed nowcast for core CPI.</li>
+    <li>30-yr auction size ($22B) from the Treasury tentative schedule; 10-yr tail figure from the Treasury auction results PDF (Sep 9).</li>
+    <li>SPY Sep 18 ex-div amount (~$1.85) is an estimate from last quarter's distribution; SSGA declares the amount on Sep 17.</li>
+  </ul></div>
+</details>
+
+<footer class="meta">
+  Generated Thu Sep 10, 2026 08:45 ET (Thu Sep 10, 2026 20:45 GMT+8) · context &amp; catalysts only — no trade ideas, no technicals.<br>
+  Every item grounded in a retrieved source and re-verified by the QC pass; figures move — re-check live before acting.
+</footer>
+
+</div>
+
+<script>
+(function(){
+  // ── Per-run constants (written by the renderer from run/window.json) ──────────
+  var open  = new Date('2026-09-10T09:30:00-04:00');
+  var close = new Date('2026-09-10T16:00:00-04:00');
+  var covEnd = new Date('2026-09-11T09:30:00-04:00');
+  // ─────────────────────────────────────────────────────────────────────────────
+  var axisStart = new Date(open.getTime() - 5.5*3600e3); // 04:00 ET on the axis day
+  var axisSpan  = 16*3600e3;                              // → 20:00 ET
+  function pctOf(d){ return (d - axisStart)/axisSpan*100; }
+  function etDate(hhmm){ var p = hhmm.split(':'); return new Date(axisStart.getTime() + ((+p[0])*60 + (+p[1]) - 240)*60e3); }
+  function fmt(d,tz){ try{return new Intl.DateTimeFormat('en-GB',{timeZone:tz,weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(d);}catch(e){return '—';} }
+  function fmtAt(d,tz){ try{return new Intl.DateTimeFormat('en-GB',{timeZone:tz,weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(d);}catch(e){return '—';} }
+  function hm(ms){ var h=Math.floor(ms/3.6e6), m=Math.floor(ms%3.6e6/6e4); return h+'h '+m+'m'; }
+  var sess = document.getElementById('sess');
+  if(sess){ sess.style.left = pctOf(open)+'%'; sess.style.right = (100 - pctOf(close))+'%'; }
+  var mks = [].slice.call(document.querySelectorAll('.axis .mk[data-et]'));
+  var groups = {};
+  mks.forEach(function(mk){ var t = mk.getAttribute('data-et'); (groups[t] = groups[t] || []).push(mk); });
+  Object.keys(groups).forEach(function(t){
+    var d = etDate(t), left = pctOf(d), g = groups[t], n = g.length;
+    g.forEach(function(mk, i){ mk.style.left = left + '%'; if(n > 1) mk.style.marginLeft = ((i - (n-1)/2)*14) + 'px'; mk._t = d.getTime(); });
+  });
+  var nowline = document.getElementById('nowline'), elapsed = document.getElementById('elapsed');
+  function tick(){
+    var now = new Date();
+    var et=document.getElementById('now-et'), cn=document.getElementById('now-cn'), cd=document.getElementById('cd');
+    if(et) et.textContent = fmt(now,'America/New_York');
+    if(cn) cn.textContent = fmt(now,'Asia/Shanghai');
+    if(cd){
+      var tail = ' · coverage ends '+fmtAt(covEnd,'America/New_York')+' ET';
+      if(now < open){ cd.innerHTML = 'Axis session opens in <b>'+hm(open-now)+'</b> · '+fmtAt(open,'America/New_York')+' ET / '+fmtAt(open,'Asia/Shanghai')+' GMT+8'+tail; }
+      else if(now < close){ cd.innerHTML = '<b>Session live</b> — closes in <b>'+hm(close-now)+'</b> · '+fmtAt(close,'America/New_York')+' ET / '+fmtAt(close,'Asia/Shanghai')+' GMT+8'+tail; }
+      else if(now < covEnd){ cd.innerHTML = '<b>After-hours / next-day window</b> — coverage ends in <b>'+hm(covEnd-now)+'</b> ('+fmtAt(covEnd,'America/New_York')+' ET open)'; }
+      else { cd.innerHTML = 'Coverage window has passed — figures are as-of the briefing run.'; }
+    }
+    var inAxis = now >= axisStart && (now - axisStart) < axisSpan;
+    if(nowline) nowline.style.display = inAxis ? 'block' : 'none';
+    if(elapsed) elapsed.style.display = inAxis ? 'block' : 'none';
+    if(inAxis){ var p = pctOf(now); if(nowline) nowline.style.left = p + '%'; if(elapsed) elapsed.style.width = p + '%';
+      mks.forEach(function(mk){ if(mk._t) mk.classList.toggle('past', mk._t < now.getTime()); }); }
+  }
+  tick(); setInterval(tick,1000);
+})();
+</script>
+</body>
+</html>
