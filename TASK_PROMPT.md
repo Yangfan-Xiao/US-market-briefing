@@ -10,7 +10,7 @@ Run the US market daily briefing.
 
 1. Set up the workspace:
    ```
-   git clone --depth 1 <REPO_URL> us-market-briefing && cd us-market-briefing
+   git clone --depth 1 https://github.com/Yangfan-Xiao/US-market-briefing.git us-market-briefing && cd us-market-briefing
    ```
    If the clone fails, stop and report the exact git error in one line — do not attempt a briefing
    without the repo.

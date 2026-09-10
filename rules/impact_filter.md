@@ -95,7 +95,7 @@ Run the questions in this order and stop at the first "no":
 8. **Scheduled or mechanical item?** → also apply the CATEGORY GATES (C) as hard thresholds.
 9. **Source** — Tier 3 alone never grounds a page item; re-ground in Tier 1/2 or tag [REPORTED — unconfirmed] and gate harder.
 
-Common traps: (i) treating an old story's new article as fresh; (ii) counting analyst target changes as events (they are opinions unless they carry new information); (iii) letting a dramatic percentage move stand in for a cause; (iv) promoting a single-name item because it is on the watchlist — reach is judged, not assumed; (v) inventing a mechanism to rescue a headline that "feels important".
+Common traps: (i) treating an old story's new article as fresh; (ii) counting analyst target changes as events (they are opinions unless they carry new information); (iii) letting a dramatic percentage move stand in for a cause; (iv) promoting a single-name item because it is on the watchlist — reach is judged, not assumed; (v) inventing a mechanism to rescue a headline that "feels important"; (vi) the opposite error — calling a same-day or overnight item "priced in" (it cannot be: priced-in requires the substance to have been public before the prior close AND the name to have already moved on it); (vii) cutting a 1–3-day-old story that has a dated pivot inside the hold window — that is precisely what "gates a forward event" in A.4 protects; (viii) treating the absence of a card for a name as a virtue in itself — the page should be short because the filter is strict, not because the gather was thin.
 
 ---
 

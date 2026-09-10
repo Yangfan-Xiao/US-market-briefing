@@ -88,6 +88,21 @@ def market_block(m):
     return "\n".join(lines)
 
 
+def scheduled_block(sc):
+    if not sc:
+        return "## Mechanical scheduled events (API/rules)\n- scheduled.json missing — the macro gatherer must confirm auctions/FOMC/OpEx itself"
+    L = ["## Mechanical scheduled events (API/rules — confirmed facts; gated=chip required)"]
+    a = [x for x in sc.get("treasury_auctions", []) if x["type"] != "Bill"]
+    L.append("- Treasury coupon auctions: " + ("; ".join(f"{x['weekday']} {x['date']} {x['label']} ${x['size_bn']}B {'reopening' if x['reopening'] else 'new'} {x['time_et']} ET{' [GATED]' if x['gated'] else ''}{' (coverage)' if x['in_coverage'] else ''}" for x in a) or "none announced yet (check Treasury tentative schedule for later hold-window dates)"))
+    L.append("- FOMC: " + ("; ".join(f"{x['date']} {x['what']}{' [GATED]' if x['gated'] else ''}" for x in sc.get("fomc", [])) or "none in window")
+             + (f" · blackout in force {sc['fed_blackout_now']['start']}..{sc['fed_blackout_now']['end']} (no voter speeches)" if sc.get("fed_blackout_now") else " · no blackout in force"))
+    L.append("- Options/structure: " + ("; ".join(f"{x['date']} {x['what']}{' [GATED]' if x['gated'] else ''}" for x in sc.get("structure", [])) or "none"))
+    L.append("- ETF ex-div: " + ("; ".join(f"{x['ticker']} {x['ex_date']} — {x['status']}" + (f" (last ${x['last_amount']})" if x.get('last_amount') else f" (${x['amount']})" if x.get('amount') else "") for x in sc.get("etf_exdiv", [])) or "none in window"))
+    if sc.get("errors"):
+        L.append("- scheduled_events errors: " + "; ".join(sc["errors"]))
+    return "\n".join(L)
+
+
 def price_line(t, i):
     s = f"- {t}: last {i.get('last_price')} · regular-session day change {i.get('day_change_pct')}%"
     st = (i.get("market_state") or "").upper()
@@ -108,6 +123,8 @@ def etf_check_needed(w):
 
 def main():
     w, m, ev = load("window.json"), load("market.json", False), load("events.json", False)
+    sc = load("scheduled.json", False)
+    sb = scheduled_block(sc)
     with open(os.path.join(ROOT, "config", "watchlist.json"), encoding="utf-8") as f:
         wl = json.load(f)
     os.makedirs(os.path.join(RUN, "gather"), exist_ok=True)
@@ -117,20 +134,20 @@ def main():
 
     # macro
     with open(os.path.join(RUN, "pack_macro.md"), "w", encoding="utf-8") as f:
-        f.write("# PACK: macro\n\n" + wb + "\n\n" + mb + "\n\n" + events_block(ev) + "\n\n"
+        f.write("# PACK: macro\n\n" + wb + "\n\n" + mb + "\n\n" + sb + "\n\n" + events_block(ev) + "\n\n"
                 f"## Watchlist (for reach judgements)\n{all_tickers}\n\n"
                 "## Your calendar-days list for the top-tier sweep\n"
                 + ", ".join(d["date"] for d in w["hold_window"]["days"] if not d["closed"]) + "\n"
                 + ("## Holidays / early closes inside the hold window\n" + "; ".join(f"{d['date']} {d.get('reason') or 'early close 13:00'}" for d in w["hold_window"]["days"] if d["closed"] or d.get("early_close")) + "\n" if any(d["closed"] or d.get("early_close") for d in w["hold_window"]["days"]) else ""))
     # flows
     with open(os.path.join(RUN, "pack_flows.md"), "w", encoding="utf-8") as f:
-        f.write("# PACK: flows\n\n" + wb + "\n\n" + events_block(ev) + "\n\n"
+        f.write("# PACK: flows\n\n" + wb + "\n\n" + sb + "\n\n" + events_block(ev) + "\n\n"
                 f"## Watchlist\n{all_tickers}\n\n"
                 f"## etf_exdiv_check_needed: {'yes' if etf_check_needed(w) else 'no (still check USO monthly)'}\n"
                 "Stock names known to pay: MSFT, GOOGL, META, AVGO, ORCL, WMT (NVDA token $0.01; INTC suspended).\n")
     # headlines
     with open(os.path.join(RUN, "pack_headlines.md"), "w", encoding="utf-8") as f:
-        f.write("# PACK: headlines\n\n" + wb + "\n\n" + mb + "\n\n"
+        f.write("# PACK: headlines\n\n" + wb + "\n\n" + mb + "\n\n" + sb + "\n\n"
                 f"## Watchlist (name the exposed tickers and the channel)\n{all_tickers}\n\n"
                 "## Earnings inside coverage (context only)\n" + ("; ".join(f"{r['ticker']} {r['date']} {r.get('report_time','')}" for r in (ev or {}).get("earnings_in_coverage", [])) or "none") + "\n")
     # symbol groups
@@ -143,7 +160,7 @@ def main():
                     + "\n".join(price_line(t, (ev or {}).get("symbols", {}).get(t, {})) for t in members if (ev or {}).get("symbols", {}).get(t, {}).get("last_price") is not None) + "\n")
     # orchestrator summary
     with open(os.path.join(RUN, "summary.md"), "w", encoding="utf-8") as f:
-        f.write("# RUN SUMMARY (orchestrator)\n\n" + wb + "\n\n" + mb + "\n\n" + events_block(ev) + "\n\n"
+        f.write("# RUN SUMMARY (orchestrator)\n\n" + wb + "\n\n" + mb + "\n\n" + sb + "\n\n" + events_block(ev) + "\n\n"
                 "## Gatherer packs written\n" + ", ".join(sorted(x for x in os.listdir(RUN) if x.startswith("pack_"))) + "\n"
                 + (f"\nWARNING: {w['WARNING']}\n" if w.get("WARNING") else ""))
     print("packs:", ", ".join(sorted(x for x in os.listdir(RUN) if x.startswith("pack_"))))

@@ -12,6 +12,8 @@ echo "== session window =="
 python3 scripts/session_window.py "$@" || { echo "session_window.py FAILED"; exit 1; }
 echo; echo "== market data =="
 python3 scripts/market_data.py || echo "market_data.py failed — metrics will render as n/a; say so in Assumptions"
+echo; echo "== scheduled events (auctions / FOMC / OpEx / ETF ex-div) =="
+python3 scripts/scheduled_events.py || echo "scheduled_events.py failed — the macro gatherer must confirm auctions/FOMC/OpEx itself"
 echo; echo "== watchlist events =="
 python3 scripts/watchlist_events.py || echo "watchlist_events.py failed — earnings/ex-div dates unknown; the macro gatherer must confirm them"
 echo; echo "== packs =="

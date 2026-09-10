@@ -5,11 +5,12 @@ Every item here must pass the CATEGORY GATES in `rules/impact_filter.md` §C —
 
 ## What to establish
 
-1. **ETF distributions.** The API does not return ex-dividend dates for ETFs. If the pack says
-   `etf_exdiv_check_needed: yes` (hold window touches the third week of Mar/Jun/Sep/Dec, or any
-   month for USO), confirm on the issuer's own page: SPY (SSGA distribution schedule), QQQ (Invesco),
-   IWM (iShares), USO (USCF). Return ex-date and amount (or "amount TBD until declaration date"). Return
-   under CALENDAR FACTS; a KEEP line only if the ex-date is inside the hold window.
+1. **ETF distributions.** The pack lists PROJECTED ex-div dates for SPY / QQQ / IWM (from last
+   year's pattern). Confirm each projected date that falls inside the hold window on the issuer's own
+   page (SSGA distribution schedule / Invesco / iShares) — one fetch each — and return the confirmed
+   date and amount (or "amount TBD until declaration date") under CALENDAR FACTS. If the issuer page is
+   stale or unreachable, return the projected date marked "projected — issuer page not updated"; never
+   drop it. USO makes no regular distributions.
 2. **Stock ex-dividends in the pack** — verify the amount for any in-window ex-date (the API gives the
    date, not the amount). One search each; NVDA's $0.01 needs no verification.
 3. **Buyback blackouts.** From the pack's confirmed earnings dates, which watchlist names with a

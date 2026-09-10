@@ -27,7 +27,9 @@ bash scripts/run_setup.sh
 ```
 Then read `run/summary.md` (only that — do not open the JSON files unless a script failed).
 It gives: run start in ET/GMT+8, coverage end, sessions in window, focus axis day, hold-window days,
-the API market snapshot with PROMOTION CANDIDATES, and API-confirmed earnings / ex-div dates.
+the API market snapshot with PROMOTION CANDIDATES, the mechanical scheduled events (Treasury coupon
+auctions with the gate flag, FOMC dates/blackout, OpEx/quad witching/VIX settlement, projected ETF
+ex-divs) and API-confirmed earnings / ex-div dates.
 If a script failed, note it for `assumptions` and continue (the gatherers can cover the gap).
 
 ## Phase 1 — Gather (7 Sonnet subagents in ONE parallel batch, ~6–8 min)
@@ -55,15 +57,26 @@ and this table follow automatically — use whatever `run/pack_G-*.md` files exi
 A gatherer that errors or returns nothing gets ONE retry; then log "gatherer X failed" in `assumptions`.
 
 ## Phase 2 — Triage (you; no tools except reading the returns)
-Pool every KEEP line. Re-apply `rules/impact_filter.md` §A–D yourself — a gatherer's "keep" is a
-nomination, not a decision. Then:
+Pool every KEEP and BORDERLINE line. Re-apply `rules/impact_filter.md` §A–D yourself — a gatherer's
+verdict is a nomination, not a decision, in both directions: rescue BORDERLINE items that clear the
+gate on your reading (typically as grade 1–2), and cut KEEP items that do not. Then:
 1. Merge duplicates across gatherers (the same event reported by two gatherers is one item; keep the
    best-sourced line).
-2. Assign the grade per §F. Order by grade, then reach.
-3. Decide the page: ≤5 Heads-up (grade 3 first; at most ONE promoted state variable), ≤6 News,
-   symbol cards only for names with a cleared catalyst, timeline rows for every dated item inside the
-   coverage window, calendar chips for every dated item in the hold window (≤4 per day), Cut for cause
-   for serious candidates that failed (with the reason).
+2. Assign the grade per §F. Order by grade, then reach. Calibration: a same-day/overnight item is
+   never "priced in"; a 1–3-day-old story with a dated pivot inside the hold window passes freshness
+   via "gates a forward event"; an elapsed release (printed before run start) becomes a News line with
+   actual vs consensus if still repricing — it is not a timeline row.
+3. Decide the page: ≤5 Heads-up (grade 3 first; at most ONE promoted state variable); News = the
+   cleared unscheduled headlines that are NOT already a Heads-up card (≤6, grade order — on a normal
+   day expect 2–6, not 0–1); symbol cards only for names with a cleared catalyst (a dated forward event
+   inside the window counts); timeline rows for every dated item inside the coverage window that is
+   still ahead; calendar chips for every dated item in the hold window (≤4 per day) — including every
+   GATED mechanical item in `run/summary.md` (10y/30y auctions, FOMC decision/minutes, OpEx/quad
+   witching, ETF ex-divs), which the validator will otherwise reject; Cut for cause listing EVERY KEEP
+   or BORDERLINE candidate you rejected, with the reason.
+   Sanity check before writing: if the draft has fewer than 2 News lines or fewer than 3 symbol cards,
+   re-read every BORDERLINE line and every CALENDAR FACTS line before concluding the day is quiet — the
+   page should be short because the filter is strict, not because the gather was thin.
 4. **Deep-dive shortlist (≤4):** any grade-3 or grade-2 item that is single-source, Tier-3 only,
    flagged `conflicting-figures` or `needs-deep-dive`, a promoted state variable whose cause is
    contested/unidentified, or a cross-impact question raised by the headlines gatherer ("which

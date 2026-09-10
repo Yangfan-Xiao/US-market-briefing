@@ -1,6 +1,13 @@
 # GATHERER: macro — scheduled macro, Fed/Treasury plumbing, market structure, policy deadlines
 
-Covers v1 Phases 2, 3 and 4. Search budget: ≤ 14 searches/fetches. Pack: `run/pack_macro.md`.
+Covers v1 Phases 2, 3 and 4. Search budget: ≤ 16 searches/fetches. Pack: `run/pack_macro.md`.
+
+**Already computed for you (in the pack, from APIs/rules — do NOT re-search, but DO carry them into
+CALENDAR FACTS with any consensus/context you find):** Treasury coupon auctions with sizes and the
+gate flag; FOMC meeting/decision/minutes/blackout dates; monthly OpEx, quad witching, VIX settlement,
+month/quarter-end; projected ETF ex-div dates. Your budget goes to the things that only a search
+can establish: data-release dates/times/consensus, Fed speakers, other central banks, policy deadlines,
+and whether a recent auction tailed.
 
 ## What to establish (all dates/times in ET)
 
@@ -9,9 +16,15 @@ Covers v1 Phases 2, 3 and 4. Search budget: ≤ 14 searches/fetches. Pack: `run/
    calendars (Tier 1), a wire's "US data this week" (Tier 2), or an economic-calendar page (e.g.
    TradingView, Trading Economics — cross-check against a second source). Mark top-tier releases
    (CPI, PPI, PCE, NFP, FOMC decision/minutes, retail sales, ISM Mfg & Services, GDP, UMich/Conf. Board).
-2. **Hold-window top-tier sweep.** Dates + times of every top-tier release inside the hold window
-   (pack lists the days). These become calendar chips; return them under CALENDAR FACTS even when they
-   are not "news".
+2. **Hold-window release sweep — a checklist, not a judgement.** For every trading day in the hold
+   window (pack lists them), locate the scheduled US releases and return each top-tier one under
+   CALENDAR FACTS with date, time ET, consensus and prior. Checklist to tick off explicitly (state
+   "not in window" for absent ones under CONSIDERED): CPI · PPI · PCE/personal income · NFP · retail
+   sales · ISM Manufacturing · ISM Services · GDP · UMich sentiment (prelim = 2nd Friday, final = 4th
+   Friday, 10:00 ET) · Conference Board confidence · JOLTS · weekly jobless claims (every Thu 08:30) ·
+   housing starts/permits · durable goods · Philly/Empire Fed · Treasury refunding (QRA). Sources: BLS
+   and Census release schedules (Tier 1), sca.isr.umich.edu, ismworld.org, conference-board.org; a
+   wire's weekly calendar as the cross-check.
 3. **FOMC.** Next meeting date(s); decision / SEP / presser / minutes / Beige Book times if inside the
    window. Communications blackout: does it start or end inside the window (starts the second Saturday
    before an FOMC, ends the Thursday after). Current market-implied odds for the next decision (CME

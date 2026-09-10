@@ -23,6 +23,14 @@ import os
 import re
 import sys
 
+# The ✗ / ⚠ glyphs printed below are not encodable in every console codepage
+# (cp936 raises UnicodeEncodeError mid-report). Force UTF-8; a no-op where it already is.
+for _s in (sys.stdout, sys.stderr):
+    try:
+        _s.reconfigure(encoding='utf-8', errors='replace')
+    except (AttributeError, ValueError):
+        pass
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RUN = os.path.join(ROOT, "run")
 
@@ -62,7 +70,8 @@ def isofix(s):
 
 
 def human(d):
-    return dt.date.fromisoformat(d).strftime("%b %-d")
+    o = dt.date.fromisoformat(d)
+    return f"{o.strftime('%b')} {o.day}"   # not %-d: glibc-only, ValueError on Windows
 
 
 def load(name, required=True):
@@ -189,6 +198,46 @@ def validate(c, w, ev, wl):
             if "agree" in (r.get("confirmation") or "") or "confirmed" in (r.get("confirmation") or ""):
                 if not any(r["ticker"] in ch["text"] for ch in c["calendar"].get(r["date"], [])):
                     warnings.append(f"API-confirmed earnings {r['ticker']} {r['date']} has no calendar chip on that day")
+    # gated mechanical items from scheduled.json must be a chip on their day — or an explicit cut
+    sc = load("scheduled.json", required=False)
+    if sc:
+        cut_text = " ".join((x["item"] + " " + x["reason"]).lower() for x in c["cut_for_cause"])
+        def has_chip(date, keys):
+            chips = " ".join(ch["text"].lower() for ch in c["calendar"].get(date, []))
+            rows = " ".join(t["label"].lower() for t in c["timeline"] if t["date"] == date)
+            return any(k in chips or k in rows for k in keys)
+        def is_cut(keys):
+            return any(k in cut_text for k in keys)
+        run_day = w["run_start_et"][:10]
+        run_hm = w["run_start_et"][11:16]
+        for a in sc.get("treasury_auctions", []):
+            if not a["gated"] or not a["in_hold_window"]:
+                continue
+            if a["date"] == run_day and a["time_et"] <= run_hm:
+                continue  # already elapsed at run start
+            keys = [a["label"].lower(), a["label"].lower().replace("-yr", "-year"), a["label"].lower().replace("-yr", "y"), "auction"]
+            if not has_chip(a["date"], keys) and not is_cut([a["label"].lower(), "auction"]):
+                msg = f"scheduled: {a['date']} {a['label']} Treasury auction (${a['size_bn']}B, {a['time_et']} ET) has no calendar chip/timeline row and is not in cut_for_cause"
+                if a["type"] == "TIPS" or a["label"].startswith("20"):
+                    warnings.append(msg + " — 20-yr/TIPS are gated only when duration is the day's story; add a chip or cut with reason")
+                else:
+                    errors.append(msg + " — 10-yr/30-yr auctions always earn a chip (CATEGORY GATES)")
+        for x in sc.get("fomc", []):
+            if not x["gated"] or not x["in_hold_window"]:
+                continue
+            if not has_chip(x["date"], ["fomc", "fed decision", "minutes"]) and not is_cut(["fomc"]):
+                errors.append(f"scheduled: {x['date']} {x['what']} has no calendar chip — add it")
+        for x in sc.get("structure", []):
+            if not x["gated"] or not x["in_hold_window"]:
+                continue
+            if not has_chip(x["date"], ["opex", "witching", "quarter-end", "quarter end"]) and not is_cut(["opex", "witching", "quarter-end"]):
+                warnings.append(f"scheduled: {x['date']} {x['what']} has no calendar chip")
+        for x in sc.get("etf_exdiv", []):
+            if not x["in_hold_window"]:
+                continue
+            t = x["ticker"].lower()
+            if not has_chip(x["ex_date"], [t]) and not is_cut([t + " ex-div", t + " ex div", t + " ex-dividend"]):
+                warnings.append(f"scheduled: {x['ticker']} ex-div {x['ex_date']} ({x['status'][:9]}) has no calendar chip — confirm on the issuer page and add it, or cut with reason")
     if len(c["heads_up"]) > 5:
         errors.append("heads_up: more than 5 cards")
     return errors, warnings
