@@ -3,7 +3,8 @@
 make_packs.py — write the per-gatherer pack files and the orchestrator summary from run/*.json.
 
 Packs (run/pack_<name>.md) give each subagent the resolved dates, its slice of the watchlist and the
-API facts it must not re-search. run/summary.md is the compact overview the orchestrator reads.
+API facts it must not re-search (earnings, ex-divs, EDGAR filings, read-through earnings from
+config/exposure_map.json). run/summary.md is the compact overview the orchestrator reads.
 """
 import datetime as dt
 import json
@@ -103,6 +104,57 @@ def scheduled_block(sc):
     return "\n".join(L)
 
 
+def read_through_block(ev, tickers=None):
+    """Non-watchlist earnings that transmit to watchlist names (config/exposure_map.json + mega-caps)."""
+    rows = (ev or {}).get("read_through_earnings") or []
+    if tickers is not None:
+        rows = [r for r in rows if r["why_listed"] == "exposure map" and any(x["ticker"] in tickers for x in r["exposed"])]
+    L = ["## Read-through earnings (non-watchlist; Nasdaq calendar, EPS forecast = Zacks — confirm time on company IR)"]
+    if not rows:
+        L.append("- none in the hold window or at its edge")
+    for r in rows:
+        exp = "; ".join(f"{x['ticker']}: {x['channel']}" for x in r["exposed"] if tickers is None or x["ticker"] in tickers)
+        cap = f" · ${r['market_cap_bn']:.0f}B" if r.get("market_cap_bn") else ""
+        L.append(f"- [{r['window']}] {r['date']} {r['report_time']} — {r['ticker']} ({r['name']}{cap}) · EPS fcst {r.get('eps_forecast_nasdaq') or 'n/a'} (Zacks) → {exp}")
+    return "\n".join(L)
+
+
+def filings_block(fl, tickers=None):
+    """EDGAR filings from the last few sessions (Tier 1). Only rows worth a look are listed."""
+    if not fl:
+        return "## SEC filings (EDGAR)\n- filings.json missing — sweep filings by search (EDGAR full-text) as before"
+    L = [f"## SEC filings since {fl['since']} (EDGAR API — Tier 1; open the URL before using a filing)"]
+    n = 0
+    for t, v in fl["by_ticker"].items():
+        if tickers is not None and t not in tickers:
+            continue
+        parts = []
+        for x in v["filings"]:
+            if x["form"].startswith("8-K") and not x["item_hints"]:
+                continue  # exhibits / routine votes only
+            if x["form"].startswith("144"):
+                continue  # planned-sale notices: routine; kept in filings.json for the flows gatherer to open if needed
+            hint = f" ({', '.join(x['item_hints'])})" if x["item_hints"] else ""
+            parts.append(f"{x['form']} {x['filed'][5:]}{hint} {x['url']}")
+        if v["form4_count"] >= 3:
+            parts.append(f"Form 4 ×{v['form4_count']} (check the cluster gate: ≥3 insiders, same direction, 5 sessions, non-10b5-1)")
+        if parts:
+            n += 1
+            L.append(f"- {t}: " + " · ".join(parts))
+    if not n:
+        L.append("- nothing that needs a look")
+    if fl.get("errors"):
+        L.append("- EDGAR errors (cover these names by search): " + "; ".join(fl["errors"][:6]))
+    return "\n".join(L)
+
+
+def themes_block(xmap):
+    L = ["## Theme clusters (one search per cluster; name the exposed tickers and the channel)"]
+    for th in (xmap or {}).get("themes", []):
+        L.append(f"- {th['cluster']} → {', '.join(th['exposed'])}: " + " · ".join(th["angles"]))
+    return "\n".join(L)
+
+
 def price_line(t, i):
     s = f"- {t}: last {i.get('last_price')} · regular-session day change {i.get('day_change_pct')}%"
     st = (i.get("market_state") or "").upper()
@@ -124,7 +176,10 @@ def etf_check_needed(w):
 def main():
     w, m, ev = load("window.json"), load("market.json", False), load("events.json", False)
     sc = load("scheduled.json", False)
+    fl = load("filings.json", False)
     sb = scheduled_block(sc)
+    xp = os.path.join(ROOT, "config", "exposure_map.json")
+    xmap = json.load(open(xp, encoding="utf-8")) if os.path.exists(xp) else {}
     with open(os.path.join(ROOT, "config", "watchlist.json"), encoding="utf-8") as f:
         wl = json.load(f)
     os.makedirs(os.path.join(RUN, "gather"), exist_ok=True)
@@ -144,23 +199,32 @@ def main():
         f.write("# PACK: flows\n\n" + wb + "\n\n" + sb + "\n\n" + events_block(ev) + "\n\n"
                 f"## Watchlist\n{all_tickers}\n\n"
                 f"## etf_exdiv_check_needed: {'yes' if etf_check_needed(w) else 'no (still check USO monthly)'}\n"
-                "Stock names known to pay: MSFT, GOOGL, META, AVGO, ORCL, WMT (NVDA token $0.01; INTC suspended).\n")
+                "Stock names known to pay: MSFT, GOOGL, META, AVGO, ORCL, WMT (NVDA token $0.01; INTC suspended).\n\n"
+                + filings_block(fl) + "\n")
     # headlines
     with open(os.path.join(RUN, "pack_headlines.md"), "w", encoding="utf-8") as f:
         f.write("# PACK: headlines\n\n" + wb + "\n\n" + mb + "\n\n" + sb + "\n\n"
                 f"## Watchlist (name the exposed tickers and the channel)\n{all_tickers}\n\n"
-                "## Earnings inside coverage (context only)\n" + ("; ".join(f"{r['ticker']} {r['date']} {r.get('report_time','')}" for r in (ev or {}).get("earnings_in_coverage", [])) or "none") + "\n")
+                "## Earnings inside coverage (context only)\n" + ("; ".join(f"{r['ticker']} {r['date']} {r.get('report_time','')}" for r in (ev or {}).get("earnings_in_coverage", [])) or "none") + "\n"
+                "Read-through earnings and the standing theme clusters are owned by the crossimpact gatherer — do not re-search them.\n")
+    # crossimpact (out-of-scope reach)
+    with open(os.path.join(RUN, "pack_crossimpact.md"), "w", encoding="utf-8") as f:
+        f.write("# PACK: crossimpact\n\n" + wb + "\n\n" + mb + "\n\n" + read_through_block(ev) + "\n\n" + themes_block(xmap) + "\n\n"
+                f"## Watchlist (report only what transmits TO these names; their own news belongs to the symbol gatherers)\n{all_tickers}\n")
     # symbol groups
     by_t = {s["ticker"]: s for s in wl["symbols"]}
     for g, members in wl["gather_groups"].items():
         names = "\n".join(f"- {t}: search as {' / '.join(by_t[t]['search_names'])} ({by_t[t]['type']})" for t in members)
         with open(os.path.join(RUN, f"pack_{g}.md"), "w", encoding="utf-8") as f:
             f.write(f"# PACK: {g}\n\n" + wb + "\n\n" + f"## Your names\n{names}\n\n" + events_block(ev, set(members)) + "\n\n"
+                    + filings_block(fl, set(members)) + "\n\n" + read_through_block(ev, set(members)) + "\n"
+                    "(Read-through earnings are context for your names — the crossimpact gatherer researches them; do not spend searches on them.)\n\n"
                     "## Price context (API, for the 'trailing parenthesis' only)\n"
                     + "\n".join(price_line(t, (ev or {}).get("symbols", {}).get(t, {})) for t in members if (ev or {}).get("symbols", {}).get(t, {}).get("last_price") is not None) + "\n")
     # orchestrator summary
     with open(os.path.join(RUN, "summary.md"), "w", encoding="utf-8") as f:
         f.write("# RUN SUMMARY (orchestrator)\n\n" + wb + "\n\n" + mb + "\n\n" + sb + "\n\n" + events_block(ev) + "\n\n"
+                + read_through_block(ev) + "\n\n" + filings_block(fl) + "\n\n"
                 "## Gatherer packs written\n" + ", ".join(sorted(x for x in os.listdir(RUN) if x.startswith("pack_"))) + "\n"
                 + (f"\nWARNING: {w['WARNING']}\n" if w.get("WARNING") else ""))
     print("packs:", ", ".join(sorted(x for x in os.listdir(RUN) if x.startswith("pack_"))))

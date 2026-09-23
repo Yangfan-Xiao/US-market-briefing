@@ -1,6 +1,8 @@
 # GATHERER: flows — corporate structure, index flow, filings, positioning, ETF distributions
 
-Covers v1 Phases 6 (ETF part), 7 and 11. Search budget: ≤ 14 searches/fetches. Pack: `run/pack_flows.md`.
+Covers v1 Phases 6 (ETF part), 7 and 11. Search budget: ≤ 12 searches/fetches. Pack: `run/pack_flows.md`.
+The filings sweep is done by script (EDGAR API → the pack's "SEC filings" section) — you read and gate
+those rows instead of searching for filings; spend the saved budget on items 5, 6 and 11.
 Every item here must pass the CATEGORY GATES in `rules/impact_filter.md` §C — they are hard numbers.
 
 ## What to establish
@@ -27,10 +29,12 @@ Every item here must pass the CATEGORY GATES in `rules/impact_filter.md` §C —
 7. **Splits, spin-offs, M&A closings/termination dates, ticker changes** with a dated event in window.
 8. **Dated non-earnings corporate events**: investor/analyst days, product keynotes, shareholder
    meetings, scheduled operating-data releases (deliveries, monthly units, subscriber prints).
-9. **Filings** (named-source, fresh-only): 13D/13G new stakes or ≥1pp changes; Form 4 clusters (≥3
-   insiders, same direction, 5 sessions) or non-10b5-1 sales > ~$5M or first open-market officer buys;
-   8-K surprises (material agreements, CEO/CFO departures, auditor changes, guidance withdrawal);
-   424B pricings. Start with MSTR, COIN, TSLA, NVDA, PLTR, SPCX, then a general sweep.
+9. **Filings — from the pack, not from search.** The pack lists every watchlist 8-K/6-K (with item
+   codes), 13D/13G, S-3/424B and 144 filed in the last few sessions, plus Form 4 counts, each with its
+   EDGAR URL (Tier 1). Open only the rows that could clear a CATEGORY GATE: 8-K items 1.01/1.02/2.01/
+   2.03/2.05/2.06/4.01/4.02/5.01/5.02/7.01/8.01; any 13D or 13G; any 424B (size as % of shares out); a
+   Form 4 count ≥3 (check the cluster gate on the filings: same direction, non-10b5-1). If the pack
+   reports EDGAR errors for some names, sweep only those names by search (EDGAR full-text search).
 10. **Short interest / borrow** for MSTR, SPCX, HOOD, PLTR, COIN, NBIS — only at the gate thresholds
     (≥10% of float AND ≥20% change, or a borrow-fee spike) and only with a stated in-window reason.
 11. **Positioning** (context only, never a card): Goldman prime-brokerage weekly read as echoed by

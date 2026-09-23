@@ -1,15 +1,18 @@
 {
-  "toplead": "**Oil above $100 after the US struck Iranian tankers is the tape driver** — the energy pass-through lands in this morning's PPI (08:30 ET) and tomorrow's CPI (Fri 08:30 ET), which together decide the Sep 16 FOMC hike; a confirmed Iran–Oman Hormuz deal or a soft CPI takes the hike off the table.",
+  "toplead": "**Oil above $100 after the US struck Iranian tankers is the tape driver** — the energy pass-through lands in today's PPI and Friday's CPI, which decide the Sep 16 FOMC hike; a confirmed Hormuz deal or a soft CPI takes the hike off the table.",
   "heads_up": [
     {"title": "Aug PPI 08:30 ET — first inflation read since Brent broke $100", "grade": 3, "kind": "bin", "badge": "Binary · top-tier", "badge_class": "b-bin",
      "desc": "Consensus headline +0.3% m/m, core +0.2% (Bloomberg survey). Energy pass-through from the Iranian-tanker strikes (Brent $100.4 on Sep 9) raises the upside-surprise risk; a hot print hardens the ~60% Sep 16 hike odds priced by fed funds futures.",
-     "when": "Thu Sep 10 · **08:30 ET** · **20:30 GMT+8**", "date": "2026-09-10", "event_type": "macro"},
+     "when": "Thu Sep 10 · **08:30 ET** · **20:30 GMT+8**", "date": "2026-09-10", "event_type": "macro",
+     "resolves": "08:30 ET print vs +0.3% m/m consensus"},
     {"title": "ORCL Q1 FY27 earnings after the close", "grade": 3, "kind": "bin", "badge": "Single-name binary", "badge_class": "b-name",
      "desc": "Only watchlist earnings in the window. Consensus EPS $1.74 adjusted (Yahoo/S&P Global) — Zacks shows $1.39, so the basis matters; revenue $19.13B. Cloud/RPO commentary is the swing factor after the EU cloud-bundling probe was opened Sep 3.",
      "when": "Thu Sep 10 · **after 16:00 ET** · after **04:00 GMT+8 (Fri)**", "date": "2026-09-10", "ticker": "ORCL", "event_type": "earnings"},
     {"title": "30-yr Treasury auction 13:00 ET at a 19-year-high yield", "grade": 2, "kind": "macro", "badge": "Broad · rates", "badge_class": "b-broad",
      "desc": "$22B reopening prices with the 30-yr at ~5.35%; yesterday's 10-yr tailed 1.4bp with dealers taking 18%. A second tail confirms the duration-demand problem into CPI; a clean stop relieves the long end.",
-     "when": "Thu Sep 10 · **13:00 ET** · **01:00 GMT+8 (Fri)**", "date": "2026-09-10", "event_type": "auction"},
+     "when": "Thu Sep 10 · **13:00 ET** · **01:00 GMT+8 (Fri)**", "date": "2026-09-10", "event_type": "auction",
+     "exposed": [{"ticker": "QQQ", "channel": "long-duration growth"}, {"ticker": "IWM", "channel": "rate-sensitive small caps"}],
+     "resolves": "13:00 ET stop-out vs when-issued; Fri CPI"},
     {"title": "Aug CPI Fri 08:30 ET — gating print for the FOMC hike", "grade": 3, "kind": "bin", "badge": "Binary · top-tier", "badge_class": "b-bin",
      "desc": "Core consensus +0.3% m/m / 2.4% y/y (Cleveland Fed nowcast 2.38%). Lands one hour before the coverage window closes; the Sep 16 decision is effectively priced off this number.",
      "when": "Fri Sep 11 · **08:30 ET** · **20:30 GMT+8**", "date": "2026-09-11", "event_type": "macro"},
@@ -27,9 +30,10 @@
     {"date": "2026-09-11", "time_et": "08:30", "time_label": "08:30 ET", "kind": "bin", "label": "Aug CPI", "why": "Gating print for the Sep 16 FOMC; lands one hour before coverage ends.", "consensus": "core +0.3% m/m · 2.4% y/y", "grade": 3, "event_type": "macro"}
   ],
   "news": [
-    {"text": "US Central Command destroyed Iranian crude tankers (Sep 8–9) in retaliation for an IRGC missile attack on a US warship — Brent closed above $100 for the first time since July, and the inflation channel now runs straight into PPI/CPI (WTI +3.5% this morning).", "grade": 3, "direction": "off", "direction_label": "Risk-off / oil-long", "tag": "broad · Tier 1 (CENTCOM statement, Reuters) · Sep 9"},
-    {"text": "Bloomberg reports an Iran–Oman Strait of Hormuz safe-passage deal is 'days away' — a confirmation would strip the supply premium out of crude as fast as the strikes added it.", "grade": 2, "direction": "pos", "direction_label": "Potential oil-bearish", "tag": "broad · Tier 2 (Bloomberg, single-source) · Sep 7 · unconfirmed"},
-    {"text": "Intel plans a ~10% PC CPU price increase effective Oct 5, its third of 2026, prioritising margin over share (DigiTimes; not confirmed by Intel) — INTC +9% Sep 8 then −5.5% Sep 9.", "grade": 1, "direction": "neutral", "direction_label": "Single-name", "tag": "INTC · Tier 3 only · [REPORTED — unconfirmed]"}
+    {"text": "US Central Command destroyed Iranian crude tankers (Sep 8–9) in retaliation for an IRGC missile attack on a US warship — Brent closed above $100 for the first time since July, and the inflation channel now runs straight into PPI/CPI (WTI +3.5% this morning).", "grade": 3, "direction": "off", "direction_label": "Risk-off / oil-long", "tag": "broad · Tier 1 (CENTCOM statement, Reuters) · Sep 9",
+     "exposed": [{"ticker": "USO", "channel": "direct"}, {"ticker": "WMT", "channel": "fuel / freight costs"}], "event_date": "2026-09-09"},
+    {"text": "Bloomberg reports an Iran–Oman Strait of Hormuz safe-passage deal is 'days away' — a confirmation would strip the supply premium out of crude as fast as the strikes added it.", "grade": 2, "direction": "pos", "direction_label": "Potential oil-bearish", "tag": "broad · Tier 2 (Bloomberg, single-source) · Sep 7 · unconfirmed", "event_date": "2026-09-07"},
+    {"text": "Intel plans a ~10% PC CPU price increase effective Oct 5, its third of 2026, prioritising margin over share (DigiTimes; not confirmed by Intel) — INTC +9% Sep 8 then −5.5% Sep 9.", "grade": 1, "direction": "neutral", "direction_label": "Single-name", "tag": "INTC · Tier 3 only · [REPORTED — unconfirmed]", "event_date": "2026-09-08", "gates_date": "2026-09-23"}
   ],
   "symbols": [
     {"ticker": "ORCL", "grade": 3, "pills": ["⚠ binary"], "summary": "Q1 FY27 earnings AMC today · EPS $1.74 adj. / rev $19.13B consensus",
@@ -45,6 +49,7 @@
     "2026-09-15": [{"text": "⚠ FOMC day 1", "class": "e-bin"}, {"text": "IWM ex-div (verify)", "class": "e-exdiv"}],
     "2026-09-16": [{"text": "⚠ FOMC decision 14:00 + SEP", "class": "e-bin"}, {"text": "Retail sales 08:30", "class": "e-macro"}],
     "2026-09-18": [{"text": "⚠ Quad witching / OpEx", "class": "e-struct"}, {"text": "SPY ex-div ~$1.85", "class": "e-exdiv"}],
+    "2026-09-17": [{"text": "FDX earnings AMC → AMZN read", "class": "e-read"}],
     "2026-09-21": [{"text": "AVGO ex-div", "class": "e-exdiv"}]
   },
   "edge": "**Thu Sep 24** — SPCX next lockup tranche · **~Fri Sep 25** — Aug PCE · no watchlist earnings until late October.",

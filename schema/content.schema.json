@@ -14,7 +14,11 @@
     "tl_kind": {"type": "string", "enum": ["bin", "macro", "flow", "news", "exdiv", "open", "close"]},
     "event_type": {"type": "string", "enum": ["earnings", "exdiv", "macro", "auction", "fed", "index", "lockup", "opex", "other"]},
     "pill": {"type": "string", "enum": ["⚠ binary", "overhang", "flow", "capital return", "ex-div", "[FILED]", "[REPORTED]", "rumor · unconfirmed"]},
-    "chip_class": {"type": "string", "enum": ["e-bin", "e-macro", "e-exdiv", "e-flow", "e-pos", "e-struct", "e-quiet"]}
+    "chip_class": {"type": "string", "enum": ["e-bin", "e-macro", "e-exdiv", "e-flow", "e-pos", "e-struct", "e-read", "e-quiet"]},
+    "exposed": {"type": "array", "maxItems": 8, "description": "watchlist tickers this item transmits to, each with its channel (rendered as ticker chips; feeds the exposure strip)",
+                "items": {"type": "object", "additionalProperties": false, "required": ["ticker", "channel"],
+                          "properties": {"ticker": {"type": "string", "minLength": 2, "maxLength": 8},
+                                         "channel": {"type": "string", "minLength": 1, "maxLength": 60}}}}
   },
   "properties": {
     "toplead": {"$ref": "#/$defs/text", "description": "ONE declarative sentence: driver + mechanism + what resolves/invalidates it. No 'whether'."},
@@ -33,7 +37,9 @@
           "when": {"type": ["string", "null"], "maxLength": 200},
           "date": {"$ref": "#/$defs/date"},
           "ticker": {"type": "string", "maxLength": 8},
-          "event_type": {"$ref": "#/$defs/event_type"}
+          "event_type": {"$ref": "#/$defs/event_type"},
+          "exposed": {"$ref": "#/$defs/exposed"},
+          "resolves": {"type": "string", "maxLength": 160, "description": "dated resolution / invalidation condition, e.g. 'Thu Sep 24 summit readout · Hormuz re-escalation'"}
         }
       }
     },
@@ -67,7 +73,10 @@
           "grade": {"$ref": "#/$defs/grade"},
           "direction": {"type": "string", "enum": ["off", "pos", "neutral"]},
           "direction_label": {"$ref": "#/$defs/short", "description": "e.g. 'Risk-off', 'Positive for semis', 'Two-sided'"},
-          "tag": {"$ref": "#/$defs/short", "description": "scope · source tier · dated context"}
+          "tag": {"$ref": "#/$defs/short", "description": "scope · source tier · dated context"},
+          "exposed": {"$ref": "#/$defs/exposed"},
+          "event_date": {"$ref": "#/$defs/date", "description": "when the underlying event happened/printed (freshness check)"},
+          "gates_date": {"$ref": "#/$defs/date", "description": "the dated forward event inside the hold window that keeps an older story relevant"}
         }
       }
     },

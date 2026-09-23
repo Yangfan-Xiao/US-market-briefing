@@ -14,8 +14,11 @@ Rejects (exit 1, nothing rendered):
 * banned constructions ("whether", "watch if", "eyes on", "remains to be seen") in the toplead, bottom line, heads-up, news, symbol lines, timeline "why"
 * continuity tokens ("UPDATE — day N", "day 3 ·", "NEW.", "RESOLVED", "carry-over", "previous briefing")
 * a symbol card for a name not on the watchlist; duplicate cards
+* an `exposed` ticker that is not on the watchlist
+* a calendar chip or timeline row for a 2/3/5/7-yr Treasury auction (CATEGORY GATE) unless an assumption starts "Short-coupon auction kept:"
+* a gated 10-yr/30-yr auction, FOMC date or OpEx without a chip — a generic "auctions" line in Cut for cause no longer excuses it
 
-Warns (renders, but the orchestrator must read the warnings): an API-confirmed earnings without a calendar chip; unusual time labels.
+Warns (renders, but the orchestrator must read the warnings): an API-confirmed earnings without a calendar chip; unusual time labels; toplead over 45 words or a heads-up `desc` over 55; a chip that matches an item in Cut for cause; a News line whose `event_date` is more than 3 sessions old without a `gates_date` in the hold window; a read-through earnings report inside the coverage window that the page never mentions.
 
 ## Layer 2 — verification subagent (`briefs/qc_verify.md`)
 
@@ -32,6 +35,9 @@ For each checkable claim the verifier must:
    * times in ET: DST offset, 08:15 ECB vs 08:45 presser, 13:00 auction results vs 13:01 wire
    * names/roles (voting status of Fed speakers; CEO/CFO names)
    * which day of the week a date falls on
+   * source tier: a `tag`/`source` that calls a non-listed outlet "Tier 2" (the Tier-2 list in the writing rules is closed) → correct the tier or re-ground
+   * freshness: a News item whose underlying event printed days ago (e.g. a preliminary release) must carry the forward pivot that keeps it relevant, or be flagged STALE
+4. **Cross-surface consistency:** a chip, timeline row or bottom-line mention for anything listed in Cut for cause is a CONSISTENCY finding.
 
 Orchestrator handling of the verifier's return:
 * CORRECTED → apply the correction to content.json verbatim; if the correction changes the item's grade or whether it clears the filter, re-decide and note it in `assumptions`.

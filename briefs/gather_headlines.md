@@ -17,7 +17,8 @@ re-rating triggered by a company that is not on the watchlist, a court ruling wi
 outside pre-market), and the top-of-page news on one wire's markets front. From this, write down (for
 yourself) the 3–5 themes driving the tape right now.
 
-**Step 2 — promotion candidates (mandatory when the pack lists any).** For each state variable the
+**Step 2 — promotion candidates (mandatory when the pack lists any, including SOX and BTC — they
+drive the semis and crypto clusters of the watchlist).** For each state variable the
 API flagged (e.g. "US30Y new 6-mo high"), run a focused cause search in Tier 1/2: auction results and
 supply calendar, corporate bond issuance, fiscal/deficit headlines, inflation repricing, positioning.
 Return the candidate as a KEEP line with the cause, or with `driver contested: A / B` or
@@ -28,8 +29,9 @@ plausibly clear the filter, find the primary event (who did what, when, in which
 the mechanism, and the transmission to the watchlist: name the exposed watchlist tickers and the
 channel (rates sensitivity, index weight, supplier/customer, regulator, commodity input). Standing
 angles to consider, only if live: Fed/central-bank news; geopolitical risk; tariffs/sanctions/trade
-actions with effective dates; private-credit or funding stress; AI-capex financing; a mega-cap
-outside the watchlist whose news re-rates a watchlist peer.
+actions with effective dates; private-credit or funding stress. (Read-through earnings, counterparty
+news and the exposure-map theme clusters belong to the crossimpact gatherer — leave them unless one is
+THE tape driver today.)
 
 **Step 4 — social / unverified (≤3 searches).** X, Truth Social, Reddit (r/wallstreetbets, r/stocks),
 StockTwits: only for policy posts or rumors that would clear Magnitude AND have a forward consequence

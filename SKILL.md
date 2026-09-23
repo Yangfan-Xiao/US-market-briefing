@@ -1,6 +1,6 @@
 ---
 name: us-market-briefing
-description: Scheduled, unattended US market briefing for an options trader's 23-name watchlist — API data + 7 parallel gatherers + deep-dives + QC, rendered by script into a fixed HTML template and published as an artifact.
+description: Scheduled, unattended US market briefing for an options trader's 23-name watchlist — API data + 8 parallel gatherers (incl. out-of-watchlist read-through) + deep-dives + QC, rendered by script into a fixed HTML template and published as an artifact.
 ---
 
 # US MARKET BRIEFING — orchestrator runbook (v2, cloud)
@@ -29,15 +29,19 @@ Then read `run/summary.md` (only that — do not open the JSON files unless a sc
 It gives: run start in ET/GMT+8, coverage end, sessions in window, focus axis day, hold-window days,
 the API market snapshot with PROMOTION CANDIDATES, the mechanical scheduled events (Treasury coupon
 auctions with the gate flag, FOMC dates/blackout, OpEx/quad witching/VIX settlement, projected ETF
-ex-divs) and API-confirmed earnings / ex-div dates.
+ex-divs), API-confirmed earnings / ex-div dates, **read-through earnings** (non-watchlist companies that
+transmit to watchlist names, from `config/exposure_map.json` + mega-caps) and the **EDGAR filings**
+sweep (8-K items, 13D/G, 424B, Form 4 counts). SOX and BTC sit in the snapshot as state variables.
+(EDGAR needs `SEC_UA` set in the environment — see TASK_PROMPT.md; if it is missing the summary says
+so and the flows gatherer falls back to search.)
 If a script failed, note it for `assumptions` and continue (the gatherers can cover the gap).
 
-## Phase 1 — Gather (7 Sonnet subagents in ONE parallel batch, ~6–8 min)
-Launch all seven with the Agent tool, `model: sonnet`, in a single message. Each prompt is short —
+## Phase 1 — Gather (8 Sonnet subagents in ONE parallel batch, ~6–8 min)
+Launch all eight with the Agent tool, `model: sonnet`, in a single message. Each prompt is short —
 the subagent reads its files itself. Use this prompt, substituting NAME / BRIEF / PACK:
 
 > You are gatherer NAME for a scheduled market briefing. Working directory: <repo path>. Read, in
-> order: briefs/_common.md, rules/impact_filter.md, rules/writing_rules.md, briefs/BRIEF, run/PACK.
+> order: briefs/_common.md, rules/gatherer_filter.md, briefs/BRIEF, run/PACK.
 > Then do the job the brief describes, within its search budget, and return EXACTLY the format in
 > briefs/_common.md (also write it to run/gather/NAME.md). No prose outside that format.
 
@@ -46,6 +50,7 @@ the subagent reads its files itself. Use this prompt, substituting NAME / BRIEF 
 | macro | gather_macro.md | pack_macro.md |
 | flows | gather_flows.md | pack_flows.md |
 | headlines | gather_headlines.md | pack_headlines.md |
+| crossimpact | gather_crossimpact.md | pack_crossimpact.md |
 | G-A_index_macro_names | gather_symbols.md | pack_G-A_index_macro_names.md |
 | G-B_megacap | gather_symbols.md | pack_G-B_megacap.md |
 | G-C_semis_ai | gather_symbols.md | pack_G-C_semis_ai.md |
@@ -72,8 +77,15 @@ gate on your reading (typically as grade 1–2), and cut KEEP items that do not.
    inside the window counts); timeline rows for every dated item inside the coverage window that is
    still ahead; calendar chips for every dated item in the hold window (≤4 per day) — including every
    GATED mechanical item in `run/summary.md` (10y/30y auctions, FOMC decision/minutes, OpEx/quad
-   witching, ETF ex-divs), which the validator will otherwise reject; Cut for cause listing EVERY KEEP
-   or BORDERLINE candidate you rejected, with the reason.
+   witching, ETF ex-divs), which the validator will otherwise reject; `e-read` chips for the read-through
+   earnings the crossimpact gatherer judged material (a read-through report inside the coverage window
+   gets a timeline row or a Cut-for-cause line — the validator warns otherwise); Cut for cause listing
+   EVERY KEEP or BORDERLINE candidate you rejected, with the reason. **A cut item never also gets a chip
+   or a timeline row** — Cut for cause and the calendar must not contradict each other; the 2/3/5/7-yr
+   auctions are cut by the category gate and get no chip.
+   Exposure: every Heads-up card and News line lists the watchlist tickers it transmits to (`exposed`,
+   from the gatherer's scope field or the deep-dive's EXPOSED line). A broad item names the 2–4 most
+   exposed names, not the whole watchlist.
    Sanity check before writing: if the draft has fewer than 2 News lines or fewer than 3 symbol cards,
    re-read every BORDERLINE line and every CALENDAR FACTS line before concluding the day is quiet — the
    page should be short because the filter is strict, not because the gather was thin.
@@ -89,24 +101,27 @@ Prompt per item:
 > shortlisted; related lines from other gatherers if any>. Return exactly the format in
 > briefs/deep_dive.md and write it to run/deep_dive/<slug>.md.
 
-Apply verdicts: CORRECTED → use the corrected facts; UNCONFIRMED → grade 1 with `[REPORTED — unconfirmed]`
+Apply verdicts (the EXPOSED line becomes the item's `exposed` list): CORRECTED → use the corrected facts; UNCONFIRMED → grade 1 with `[REPORTED — unconfirmed]`
 or cut; CUT → Cut for cause.
 
 ## Phase 4 — Write `run/content.json` (you)
 Copy the shape from `schema/content.skeleton.json`; the binding rules are in
 `schema/content.schema.json` and `rules/writing_rules.md`. Writing checklist:
-* `toplead`: one declarative sentence — driver (grade 3) + mechanism + resolution/invalidator.
+* `toplead`: one declarative sentence, ≤45 words — driver (grade 3) + mechanism + resolution/invalidator.
 * `heads_up`: ≤5; `kind`/`badge_class` per the taxonomy; `when` in ET and GMT+8 (ET +12h EDT / +13h EST —
   `run/summary.md` says which); set `date`, `ticker`, `event_type` on dated items so the validator can check them.
+  `desc` ≤55 words; tickers go in `exposed` (ticker + channel) and the resolver in `resolves`, not in prose.
 * `conditions_tone`: read the API snapshot in `run/summary.md`; do not restate every number.
 * `timeline`: only dated items inside the coverage window (the validator rejects others); `time_et`
   24h ET or null with a label (`Pre-open`, `All session`, `AMC`); the renderer adds open/close rows.
   An after-close event on day D is dated D with label `AMC` — never placed on another day.
-* `news`: ≤6, cause-first; `direction` off/pos/neutral; `tag` names scope, tier+outlet, date.
+* `news`: ≤6, cause-first; `direction` off/pos/neutral; `tag` names scope, tier+outlet, date; `exposed`;
+  `event_date` (when it happened); `gates_date` if the event is >3 sessions old (else it is stale — cut it).
 * `symbols`: only names with cleared catalysts; pills from the taxonomy; `source` names the highest
   tier used; add `events` for earnings/ex-div so dates are validated. Ex-div items for several names
   may share one card with ticker `EX-DIV`.
-* `calendar`: keys are hold-window trading days from `run/summary.md`; ≤4 chips; closed days get no key.
+* `calendar`: keys are hold-window trading days from `run/summary.md`; ≤4 chips; closed days get no key;
+  read-through earnings as `e-read` ("MU earnings AMC → NVDA/AMD"); no chip for anything in Cut for cause.
 * `edge`: dated items just past the window edge. `bottom_line`: per the writing rules.
 * `cut_for_cause`: 8–20 lines. `assumptions`: every default, conflict, gap, failed gatherer.
 Then run `python3 scripts/render_briefing.py --check-only` and fix every error it reports (re-run
@@ -139,6 +154,6 @@ Coverage window · the toplead sentence · counts (heads-up / news / symbol card
 artifact link. Nothing else.
 
 ## Budget guardrails
-Orchestrator context stays small: read `run/summary.md`, the seven returns, ≤4 deep-dives, one QC
+Orchestrator context stays small: read `run/summary.md`, the eight returns, ≤4 deep-dives, one QC
 report, and the validator output. Do not open pack files, gather JSON, the template, or past outputs.
 Target wall-clock ≈ 15 min; if Phase 1 exceeds 12 min, proceed with whatever has returned and log it.

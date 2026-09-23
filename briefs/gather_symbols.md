@@ -1,23 +1,32 @@
 # GATHERER: symbols — single-name catalyst sweep for ONE watchlist group
 
 Covers v1 Phases 8, 9 and 10 for the names listed in your pack (`run/pack_<group>.md`, 5–6 names).
-Search budget: 1 baseline search per name + up to 6 follow-ups for the whole group (≤ 12 total).
+Search budget: 2 searches per name (≤ 12 for a 6-name group) + up to 6 full-page fetches for the whole
+group. Searches are cheap; full pages are what cost tokens — spend on searches, economise on fetches.
 
-## Procedure — two passes, not one search per angle
+## Procedure — two targeted queries per name, then follow-ups
 
-**Pass 1 — baseline scan (one search per name, all launched in parallel).**
-Query: `<Company name> <TICKER> news` restricted to the last 48 hours (use the search tool's recency
-if available; otherwise include the month and day). Read the result list, open at most two articles
-per name, and decide: does anything here plausibly clear the IMPACT FILTER, or come close (BORDERLINE)?
-Many names on many days produce nothing — they get a CONSIDERED line ("nothing material found") and
-no KEEP/BORDERLINE line. ETFs in your group (SPY, QQQ, IWM, USO): search the driver, not the ticker — "S&P 500
-ETF flows / rebalance news" for SPY/QQQ/IWM, "crude oil ETF USO news" for USO.
+**Pass 1 — two queries per name, all launched in parallel. Decide from the snippets.**
+* **Q1 recency (Tier 1/2 only):** `<Company name> <TICKER>` restricted to the last 48 hours and to the
+  Tier-2 outlet list in the filter card (use the search tool's allowed-domains / recency options; else
+  `site:reuters.com OR site:bloomberg.com OR site:cnbc.com OR site:wsj.com` plus the month and day).
+* **Q2 forward-dated:** `<Company name> (conference OR keynote OR "investor day" OR hearing OR ruling OR
+  deadline OR launch OR vote OR lockup) <Month> <Year>` — any domain. This is how dated pivots inside the
+  hold window get found (broker conferences with the CEO/CFO, court and agency dates, product events).
+Read the snippets and decide per name: candidate (plausibly clears the filter or is BORDERLINE) or
+nothing. Do not open articles in Pass 1. Many names on many days produce nothing — they get a
+CONSIDERED line ("nothing material found") and no KEEP/BORDERLINE line.
+ETFs in your group (SPY, QQQ, IWM, USO): search the driver, not the ticker — "S&P 500 ETF flows /
+rebalance news" for SPY/QQQ/IWM, "crude oil supply news" for USO; Q2 becomes "index rebalance / OPEC+
+meeting <Month> <Year>".
+**Filings are already in your pack** (EDGAR API, Tier 1): read the listed 8-K items / 13D / 424B lines
+for your names and treat a material one as a candidate — do not search for filings.
 
-**Pass 2 — follow-ups (only where Pass 1 surfaced a candidate; ≤6 for the group).**
-For each candidate: (a) find the primary or Tier-2 grounding (company IR / 8-K / court docket /
-Reuters / Bloomberg) if Pass 1 only gave Tier 3; (b) pin the date, time (ET) and the concrete
-figures; (c) if the candidate is a price move, find the trigger — no trigger in Tier 1/2 → cut as
-"move without identified driver". Do not spend follow-ups on names with nothing.
+**Pass 2 — follow-ups (only where Pass 1 surfaced a candidate; ≤ 6 fetches for the group).**
+For each candidate: (a) open the primary or Tier-2 grounding (company IR / 8-K from the pack / court
+docket / Reuters / Bloomberg); (b) pin the date, time (ET) and the concrete figures; (c) if the
+candidate is a price move, find the trigger — no trigger in Tier 1/2 → cut as "move without identified
+driver". One fetch per candidate; do not spend follow-ups on names with nothing.
 
 ## What counts (from v1)
 Product launches, conferences/keynotes with a date, regulatory/court decisions, M&A, major investment
@@ -47,4 +56,5 @@ proves the name was covered.
 ## Cross-impact hint
 If a headline about a non-watchlist company clearly transmits to one of your names through a stated
 channel (supplier, customer, competitor, regulator), you may return it scoped to your name with the
-channel named. Do not return generic "sector sympathy".
+channel named. Do not return generic "sector sympathy". Read-through EARNINGS listed in your pack are
+owned by the crossimpact gatherer — do not spend searches on them.

@@ -11,11 +11,12 @@ Run the US market daily briefing.
 1. Set up the workspace:
    ```
    git clone --depth 1 https://github.com/Yangfan-Xiao/US-market-briefing.git us-market-briefing && cd us-market-briefing
+   export SEC_UA="us-market-briefing <your-contact-email>"
    ```
    If the clone fails, stop and report the exact git error in one line — do not attempt a briefing
    without the repo.
 2. Open `SKILL.md` in the repo and follow it phase by phase. It is the complete runbook: scripts for
-   dates and market data, seven parallel Sonnet gatherers, deep-dives, a QC pass, script rendering,
+   dates and market data, eight parallel Sonnet gatherers, deep-dives, a QC pass, script rendering,
    and delivery. Do not improvise a different workflow and do not reproduce or read any HTML template.
 3. Delivery settings for this task:
    * Latest-briefing artifact URL: `https://claude.ai/code/artifact/4a9b0e0c-e4c9-458b-b9e7-5443a95b77da`
@@ -43,4 +44,10 @@ to the day after tomorrow's open (by design).
 ## Model
 Set the task's model to Opus (orchestrator quality decides the briefing). Gatherers, deep-dives and
 QC are pinned to Sonnet inside the runbook. Approximate cost per run: one Opus context of ~40–60K
-tokens plus 7–12 Sonnet subagent runs of ~30–60K each.
+tokens plus 8–13 Sonnet subagent runs of ~25–50K each (gatherers read a short filter card and fetch
+fewer full pages than before, so the eighth gatherer roughly pays for itself).
+
+## SEC_UA
+EDGAR (the filings sweep) refuses requests whose User-Agent has no contact address. Put any address you
+are happy for SEC to see in the `export SEC_UA=...` line above. It stays in the task prompt, not the
+public repo. Without it the filings step logs an error and the flows gatherer falls back to search.

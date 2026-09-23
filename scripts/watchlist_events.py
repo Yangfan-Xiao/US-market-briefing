@@ -7,9 +7,12 @@ For each symbol in config/watchlist.json:
   - next ex-dividend date / pay date                                     (Yahoo quoteSummary.calendarEvents)
   - Nasdaq earnings-calendar cross-check for every trading day in the hold window (report time: BMO/AMC)
   - last price and day change (Yahoo chart meta) — context only
+  - read-through earnings: non-watchlist names from config/exposure_map.json (plus any mega-cap above the
+    catch-all market cap) found in the same Nasdaq calendar rows — no extra API calls
 
 Writes run/events.json with derived lists:
-  earnings_in_coverage, earnings_in_hold_window, exdiv_in_hold_window, date_conflicts, unverified.
+  earnings_in_coverage, earnings_in_hold_window, exdiv_in_hold_window, date_conflicts, unverified,
+  read_through_earnings.
 
 Reads run/window.json (run session_window.py first).
 Consensus basis note: Yahoo consensus is the S&P Global/LSEG "adjusted" (non-GAAP) mean; Nasdaq's
@@ -100,8 +103,45 @@ def nasdaq_earnings(date_iso):
                           "Referer": "https://www.nasdaq.com/"}))
     rows = ((d.get("data") or {}).get("rows")) or []
     return {r["symbol"]: {"time": r.get("time"), "eps_forecast": r.get("epsForecast"),
-                          "fiscal_quarter_ending": r.get("fiscalQuarterEnding"), "no_of_ests": r.get("noOfEsts")}
+                          "fiscal_quarter_ending": r.get("fiscalQuarterEnding"), "no_of_ests": r.get("noOfEsts"),
+                          "name": r.get("name"), "market_cap_bn": parse_cap_bn(r.get("marketCap"))}
             for r in rows}
+
+
+def parse_cap_bn(s):
+    """Nasdaq marketCap strings look like '$1,234,567,890' (or 'N/A')."""
+    try:
+        return round(float(str(s).replace("$", "").replace(",", "")) / 1e9, 1)
+    except (TypeError, ValueError):
+        return None
+
+
+def read_through_earnings(nasdaq, wl_tickers, xmap, cov_end, hold_last):
+    """Non-watchlist earnings in the hold window / edge that transmit to watchlist names:
+    every ticker in config/exposure_map.json → read_through, plus any company at or above the
+    catch-all market cap (index-weight channel). Uses the Nasdaq rows already fetched — no extra calls."""
+    rt = (xmap or {}).get("read_through", {})
+    cap_min = (xmap or {}).get("catchall_market_cap_bn", 200)
+    out = []
+    for d, rows in sorted(nasdaq.items()):
+        for t, info in rows.items():
+            if t in wl_tickers:
+                continue
+            if t in rt:
+                exposed = [{"ticker": k, "channel": v} for k, v in rt[t]["exposed"].items()]
+                why = "exposure map"
+            elif (info.get("market_cap_bn") or 0) >= cap_min:
+                exposed = [{"ticker": "SPY", "channel": "index weight"}, {"ticker": "QQQ", "channel": "index weight (if Nasdaq-100)"}]
+                why = f"mega-cap ≥ ${cap_min}B"
+            else:
+                continue
+            dd = dt.date.fromisoformat(d)
+            out.append({"ticker": t, "name": (rt.get(t) or {}).get("name") or info.get("name"), "date": d,
+                        "report_time": TIME_MAP.get(info["time"], info["time"]),
+                        "eps_forecast_nasdaq": info.get("eps_forecast"), "market_cap_bn": info.get("market_cap_bn"),
+                        "window": "coverage" if dd <= cov_end else "hold" if dd <= hold_last else "edge",
+                        "exposed": exposed, "why_listed": why})
+    return out
 
 
 TIME_MAP = {"time-after-hours": "AMC (after close)", "time-pre-market": "BMO (before open)",
@@ -150,6 +190,9 @@ def main():
             nq_errors.append(f"{d}: {type(e).__name__}: {e}")
         time.sleep(0.3)
     wl_tickers = {s["ticker"] for s in wl["symbols"]}
+    xmap_path = os.path.join(ROOT, "config", "exposure_map.json")
+    xmap = json.load(open(xmap_path, encoding="utf-8")) if os.path.exists(xmap_path) else {}
+    rt_earn = read_through_earnings(nasdaq, wl_tickers, xmap, cov_end, hold_last)
     nasdaq_hits = {}
     for d, rows in nasdaq.items():
         for t, info in rows.items():
@@ -218,6 +261,8 @@ def main():
         "exdiv_in_hold_window": sorted(exdiv_hold, key=lambda r: r["ex_date"]),
         "exdiv_just_past_edge": sorted(exdiv_edge, key=lambda r: r["ex_date"]),
         "date_conflicts": conflicts, "unverified": unverified,
+        "read_through_earnings": rt_earn,
+        "read_through_note": "Non-watchlist earnings (Nasdaq calendar, Zacks EPS forecast) that transmit to watchlist names via config/exposure_map.json or index weight. Dates are from one API — confirm on company IR before printing a time.",
         "symbols": symbols,
         "nasdaq_calendar_days_checked": sorted(nasdaq.keys()),
         "errors": errors + nq_errors,
@@ -230,6 +275,7 @@ def main():
     print(f"Earnings in hold window (≤ {hold_last}): " + (", ".join(f"{r['ticker']} {r['date']}" for r in out['earnings_in_hold_window']) or "none"))
     print("Earnings just past edge: " + (", ".join(f"{r['ticker']} {r['date']}" for r in out['earnings_just_past_edge']) or "none"))
     print("Ex-div in hold window: " + (", ".join(f"{r['ticker']} {r['ex_date']}" for r in out['exdiv_in_hold_window']) or "none"))
+    print("Read-through earnings (hold window + edge): " + (", ".join(f"{r['ticker']} {r['date']} → {'/'.join(x['ticker'] for x in r['exposed'])}" for r in rt_earn) or "none"))
     if conflicts:
         print("DATE CONFLICTS: " + "; ".join(f"{r['ticker']} {r['date']}" for r in conflicts))
     if errors or nq_errors:

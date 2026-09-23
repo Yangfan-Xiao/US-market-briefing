@@ -208,6 +208,11 @@ def validate(c, w, ev, wl):
             return any(k in chips or k in rows for k in keys)
         def is_cut(keys):
             return any(k in cut_text for k in keys)
+        def label_keys(lbl):
+            # "10-yr" → 10-yr / 10-year / 10y / 10 yr — never the bare word "auction", which would let a cut line
+            # about the 2/5/7-yr auctions silently excuse a missing 10-yr/30-yr chip
+            lbl = lbl.lower()
+            return [lbl, lbl.replace("-yr", "-year"), lbl.replace("-yr", "y"), lbl.replace("-yr", " yr")]
         run_day = w["run_start_et"][:10]
         run_hm = w["run_start_et"][11:16]
         for a in sc.get("treasury_auctions", []):
@@ -215,8 +220,8 @@ def validate(c, w, ev, wl):
                 continue
             if a["date"] == run_day and a["time_et"] <= run_hm:
                 continue  # already elapsed at run start
-            keys = [a["label"].lower(), a["label"].lower().replace("-yr", "-year"), a["label"].lower().replace("-yr", "y"), "auction"]
-            if not has_chip(a["date"], keys) and not is_cut([a["label"].lower(), "auction"]):
+            keys = label_keys(a["label"]) + ["auction"]
+            if not has_chip(a["date"], keys) and not is_cut(label_keys(a["label"])):
                 msg = f"scheduled: {a['date']} {a['label']} Treasury auction (${a['size_bn']}B, {a['time_et']} ET) has no calendar chip/timeline row and is not in cut_for_cause"
                 if a["type"] == "TIPS" or a["label"].startswith("20"):
                     warnings.append(msg + " — 20-yr/TIPS are gated only when duration is the day's story; add a chip or cut with reason")
@@ -240,7 +245,134 @@ def validate(c, w, ev, wl):
                 warnings.append(f"scheduled: {x['ticker']} ex-div {x['ex_date']} ({x['status'][:9]}) has no calendar chip — confirm on the issuer page and add it, or cut with reason")
     if len(c["heads_up"]) > 5:
         errors.append("heads_up: more than 5 cards")
+
+    # exposure chips must name watchlist tickers
+    for sect in ("heads_up", "news"):
+        for i, it in enumerate(c[sect]):
+            for x in it.get("exposed", []) or []:
+                if x["ticker"].lstrip("$").upper() not in tickers:
+                    errors.append(f"{sect}[{i}].exposed: {x['ticker']} is not on the watchlist (name the watchlist ticker the item transmits to)")
+
+    # length budget — a short toplead and tight cards are the point of the page
+    if words(c["toplead"]) > TOPLEAD_WORDS:
+        warnings.append(f"toplead: {words(c['toplead'])} words (budget {TOPLEAD_WORDS}) — cut to driver + mechanism + resolver")
+    for i, h in enumerate(c["heads_up"]):
+        if words(h["desc"]) > HU_DESC_WORDS:
+            warnings.append(f"heads_up[{i}].desc: {words(h['desc'])} words (budget {HU_DESC_WORDS}) — move tickers to 'exposed' and the resolver to 'resolves'")
+
+    # CATEGORY GATE: 2/3/5/7-yr coupons are routine plumbing — no chip or timeline row unless explicitly justified
+    kept_short = any(re.search(r"short-coupon auction kept", a, flags=re.I) for a in c["assumptions"])
+    if not kept_short:
+        for d, chips in c["calendar"].items():
+            for ch in chips:
+                if SHORT_COUPON.search(ch["text"]):
+                    errors.append(f"calendar[{d}] '{ch['text']}': 2/3/5/7-yr auctions fail the CATEGORY GATE — drop the chip, or add an assumption starting 'Short-coupon auction kept:' with the tail + rates-driver reason")
+        for i, t in enumerate(c["timeline"]):
+            if SHORT_COUPON.search(t["label"]):
+                errors.append(f"timeline[{i}] '{t['label']}': 2/3/5/7-yr auctions fail the CATEGORY GATE (see calendar rule)")
+
+    # an item cut for cause must not reappear as a chip
+    cut_items = [x["item"].lower() for x in c["cut_for_cause"]]
+    for d, chips in c["calendar"].items():
+        for ch in chips:
+            toks = [t for t in re.findall(r"[a-z]{3,}", ch["text"].lower()) if t not in STOP]
+            if len(toks) < 2:
+                continue
+            for ci in cut_items:
+                if sum(t in ci for t in toks) >= max(2, round(len(toks) * 0.67)):
+                    warnings.append(f"calendar[{d}] '{ch['text']}' looks like cut item '{ci[:60]}' — an item in Cut for cause gets no chip")
+                    break
+
+    # freshness: a News line about an event more than 3 sessions old needs a dated forward pivot in the hold window
+    run_day = dt.date.fromisoformat(w["run_start_et"][:10])
+    for i, n in enumerate(c["news"]):
+        if not n.get("event_date"):
+            continue
+        age = sessions_between(dt.date.fromisoformat(n["event_date"]), run_day)
+        if age > 3 and n.get("gates_date") not in hold_days:
+            warnings.append(f"news[{i}]: event dated {n['event_date']} is {age} sessions old with no gates_date inside the hold window — fails Freshness (A.4); cut it or name the forward pivot")
+
+    # read-through earnings inside the coverage window should be judged, not missed
+    if ev:
+        page_text = json.dumps(c, ensure_ascii=False)
+        for r in ev.get("read_through_earnings", []):
+            if r["window"] == "coverage" and r["why_listed"] == "exposure map" and not re.search(rf"\b{re.escape(r['ticker'])}\b", page_text):
+                warnings.append(f"read-through: {r['ticker']} ({r['name']}) reports {r['date']} {r['report_time']} inside the coverage window "
+                                f"→ {', '.join(x['ticker'] for x in r['exposed'])} — add a timeline row / chip, or cut with reason")
     return errors, warnings
+
+
+TOPLEAD_WORDS, HU_DESC_WORDS = 45, 55
+SHORT_COUPON = re.compile(r"\b(2|3|5|7)[- ]?(yr|year|y)\b[^,;]*\b(auction|reopen)|\b(auction|reopen)\w*\b[^,;]*\b(2|3|5|7)[- ]?(yr|year|y)\b", re.I)
+EVENT_WORD = {"earnings": "earnings", "exdiv": "ex-div", "lockup": "lockup", "index": "index event", "fed": "Fed",
+              "macro": "macro", "auction": "auction", "opex": "OpEx", "other": "event"}
+STOP = {"the", "and", "for", "with", "est", "prelim", "final", "day", "amc", "bmo", "tbd", "sep", "oct", "nov", "dec", "jan"}
+
+
+def words(s):
+    return len(re.findall(r"\S+", re.sub(r"\*\*", "", s or "")))
+
+
+def sessions_between(a, b):
+    """weekdays after a up to and including b (holidays ignored — a freshness heuristic, not a calendar)."""
+    n, d = 0, a
+    while d < b:
+        d += dt.timedelta(days=1)
+        n += d.weekday() < 5
+    return n
+
+
+# ---------- watchlist exposure strip ----------
+def build_exposure(c, ev, wl, sc):
+    """Highest grade touching each watchlist name, with short reasons — computed from content + API facts."""
+    order = [s["ticker"] for s in wl["symbols"]]
+    key = {t.lstrip("$").upper(): t for t in order}
+    cells = {t: {"ticker": t, "grade": 0, "reasons": []} for t in order}
+
+    def hit(tk, grade, reason):
+        t = key.get((tk or "").lstrip("$").upper())
+        if not t:
+            return
+        cell = cells[t]
+        cell["grade"] = max(cell["grade"], grade)
+        cell["reasons"].append((grade, reason))
+
+    for s in c["symbols"]:
+        hit(s["ticker"], s["grade"], s["pills"][0] if s["pills"] else "catalyst")
+    for h in c["heads_up"]:
+        if h.get("ticker"):
+            hit(h["ticker"], h["grade"], EVENT_WORD.get(h.get("event_type"), "heads-up") + (f" {human(h['date'])}" if h.get("date") else ""))
+        for x in h.get("exposed", []) or []:
+            hit(x["ticker"], h["grade"], x["channel"])
+    for n in c["news"]:
+        for x in n.get("exposed", []) or []:
+            hit(x["ticker"], n["grade"], x["channel"])
+    if ev:
+        cov = {r["ticker"] for r in ev.get("earnings_in_coverage", [])}
+        for r in ev.get("earnings_in_hold_window", []):
+            hit(r["ticker"], 3 if r["ticker"] in cov else 2, f"earnings {human(r['date'])}")
+        for r in ev.get("exdiv_in_hold_window", []):
+            hit(r["ticker"], 1, f"ex-div {human(r['ex_date'])}")
+        for r in ev.get("read_through_earnings", []):
+            if r["window"] != "edge" and r["why_listed"] == "exposure map":
+                for x in r["exposed"]:
+                    hit(x["ticker"], 1, f"{r['ticker']} earns {human(r['date'])}")
+    for x in (sc or {}).get("etf_exdiv", []):
+        if x.get("in_hold_window"):
+            hit(x["ticker"], 1, f"ex-div {human(x['ex_date'])}")
+    out = []
+    for t in order:
+        cell = cells[t]
+        rs = sorted(cell["reasons"], key=lambda r: -r[0])
+        seen, uniq = set(), []
+        for g, r in rs:
+            if r not in seen:
+                seen.add(r)
+                uniq.append(r)
+        cell["top"] = uniq[0] if uniq else "clear"
+        cell["title"] = " · ".join(uniq) if uniq else "no catalyst in the hold window"
+        out.append(cell)
+    return out
 
 
 # ---------- timeline assembly ----------
@@ -342,6 +474,7 @@ def main():
     ev_summary = ", ".join(f"{r['ticker']} {r['date']} {r.get('report_time', '')} [{r['confirmation']}]" for r in (ev or {}).get("earnings_in_coverage", [])) or "none"
     exdiv_summary = ", ".join(f"{r['ticker']} {r['ex_date']}" for r in (ev or {}).get("exdiv_in_hold_window", [])) or "none from API (ETF ex-divs need issuer check)"
     unavailable = [x["key"] for x in m["metrics"] if not x.get("ok")]
+    exposure = build_exposure(c, ev, wl, load("scheduled.json", required=False))
 
     page = tpl.render(
         w=w, m=m, c=c,
@@ -351,7 +484,7 @@ def main():
         coverage_end_iso=dt.datetime.fromisoformat(w["coverage"]["end_et"]).strftime("%Y-%m-%dT%H:%M:%S") + ("-0400" if w["et_label"] == "EDT" else "-0500"),
         cn=lambda h, mi: f"{(h + off) % 24:02d}:{mi:02d}",
         pill_class=lambda p: PILL_CLASS.get(p, "p-filed"),
-        ev_summary=ev_summary, exdiv_summary=exdiv_summary, unavailable=unavailable,
+        ev_summary=ev_summary, exdiv_summary=exdiv_summary, unavailable=unavailable, exposure=exposure,
     )
 
     # artifact fragment (Artifact tool adds doctype/html/head/body itself)

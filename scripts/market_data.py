@@ -2,9 +2,10 @@
 """
 market_data.py — fixed Market-Conditions metrics from APIs (no web pages, no LLM).
 
-Fixed list: SPY, QQQ, VIX, US 2Y, US 10Y, US 30Y, WTI, CNN Fear & Greed.
+Fixed list: SPY, QQQ, VIX, US 2Y, US 10Y, US 30Y, WTI, SOX, BTC, CNN Fear & Greed.
 Sources (all reachable from the cloud container without keys, verified 2026-09-10):
-  - Yahoo Finance chart API  (SPY, QQQ, ^VIX, ^TNX=10Y, ^TYX=30Y, 2YY=F=2Y yield futures, CL=F=WTI)
+  - Yahoo Finance chart API  (SPY, QQQ, ^VIX, ^TNX=10Y, ^TYX=30Y, 2YY=F=2Y yield futures, CL=F=WTI,
+    ^SOX=Philadelphia Semiconductor index, BTC-USD)
   - US Treasury daily par yield curve XML (official prior-close 2Y/10Y/30Y)
   - CNN Fear & Greed JSON
 
@@ -70,10 +71,13 @@ def promotion_check(daily, last, last_epoch):
     if len(closes) < 40:
         return out
     hi, lo = max(closes), min(closes)
+    # months from the calendar span, not the bar count (BTC trades 7 days a week)
+    first_day = min(dt.datetime.fromtimestamp(t, ET).date() for t, c in daily)
+    months = round((today_et - first_day).days / 30.4)
     if last >= hi:
-        out["extreme"] = f"new {round(len(closes)/21)}-mo high"
+        out["extreme"] = f"new {months}-mo high"
     elif last <= lo:
-        out["extreme"] = f"new {round(len(closes)/21)}-mo low"
+        out["extreme"] = f"new {months}-mo low"
     chg = [b - a for a, b in zip(closes[-22:-1], closes[-21:])]   # last ~21 daily changes
     if len(chg) >= 15:
         mu = sum(chg) / len(chg)
@@ -86,7 +90,7 @@ def promotion_check(daily, last, last_epoch):
 
 
 def yahoo_metric(sym, label, kind):
-    """kind: 'price' (2 decimals), 'vix', 'yield' (percent, 2-3 decimals), 'oil'."""
+    """kind: 'price' ($, 2 decimals), 'index' (no $), 'vix', 'yield' (percent, 2-3 decimals), 'oil'."""
     meta, daily = yahoo_chart(sym, "6mo", "1d")
     try:
         _, intra = yahoo_chart(sym, "1d", "5m", prepost=True)
@@ -107,7 +111,10 @@ def yahoo_metric(sym, label, kind):
         implied = rmp / (1 + rcp / 100.0)
         if abs(implied - prev_close) / prev_close > 0.004:   # >0.4% disagreement → trust Yahoo's implied value
             prev_close = implied
-    wk_close = completed[-5][1] if len(completed) >= 5 else None
+    # week-ago close by calendar date (same weekday last week), so 24/7 series like BTC line up with equities
+    wk_cut = today_et - dt.timedelta(days=7)
+    wk_bars = [c for t, c in completed if dt.datetime.fromtimestamp(t, ET).date() <= wk_cut]
+    wk_close = wk_bars[-1] if wk_bars else None
     chg = last - prev_close if prev_close else None
     pct = (chg / prev_close * 100) if (chg is not None and prev_close) else None
     wk_chg = (last - wk_close) if wk_close else None
@@ -117,6 +124,10 @@ def yahoo_metric(sym, label, kind):
         val = f"{last:.2f}%"
         dline = (f"{'▲' if chg > 0 else '▼' if chg < 0 else '■'} {chg*100:+.0f} bp vs prev close"
                  + (f" · wk {wk_chg*100:+.0f} bp" if wk_chg is not None else "")) if chg is not None else "—"
+    elif kind == "index":
+        val = f"{last:,.2f}"
+        dline = (f"{'▲' if chg > 0 else '▼' if chg < 0 else '■'} {pct:+.2f}% vs prev close"
+                 + (f" · wk {wk_pct:+.1f}%" if wk_pct is not None else "")) if chg is not None else "—"
     elif kind == "vix":
         val = f"{last:.2f}"
         dline = (f"{'▲' if chg > 0 else '▼' if chg < 0 else '■'} {chg:+.2f} ({pct:+.1f}%) vs prev close"
@@ -249,6 +260,9 @@ def main():
     metrics.insert(3, dict(key="US2Y", **m2))
 
     metrics.append(dict(key="WTI", **safe(yahoo_metric, "CL=F", "WTI crude", "oil")))
+    # Cluster drivers: SOX moves the 6 semis/AI names; BTC moves MSTR / COIN / HOOD. Same promotion rule.
+    metrics.append(dict(key="SOX", **safe(yahoo_metric, "^SOX", "Semis · SOX", "index")))
+    metrics.append(dict(key="BTC", **safe(yahoo_metric, "BTC-USD", "Bitcoin · BTC", "price")))
     metrics.append(dict(key="FG", **safe(fear_greed)))
 
     promoted = [{"key": m["key"], "label": m["label"], "value": m["value"], **m["promotion"]}
